@@ -1,4 +1,5 @@
 import Submission.Spec
+set_option autoImplicit true
 
 /-!
 # Spec-level sort layer (R2125607414)

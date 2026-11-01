@@ -1,4 +1,5 @@
 import Submission.Fit
+set_option autoImplicit true
 
 /-!
 # Runtime bound (R2125607414)

@@ -1,4 +1,5 @@
 import Submission.Program
+set_option autoImplicit true
 
 /-!
 # Determinism and the `Correct` collapse (R2125607414)

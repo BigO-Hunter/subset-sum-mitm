@@ -1,4 +1,5 @@
 import Submission.SubsetSumStatement
+set_option autoImplicit true
 
 /-!
 # The mathematical core: MITM correctness (R2125607414, spec layer)

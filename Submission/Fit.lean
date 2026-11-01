@@ -1,4 +1,5 @@
 import Submission.Bridge
+set_option autoImplicit true
 
 /-!
 # Word-length fit: `2·Σa < 2^w` (R2125607414)

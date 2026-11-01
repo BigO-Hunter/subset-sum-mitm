@@ -1,4 +1,5 @@
 import Submission.Fit
+set_option autoImplicit true
 
 /-!
 # The BitVec↔Nat vocabulary (R2125607414)

@@ -1,5 +1,6 @@
 import Submission.Det
 import Submission.Words
+set_option autoImplicit true
 
 /-!
 # The exec calculus + relocation prologue (R2125607414)

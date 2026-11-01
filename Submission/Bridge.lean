@@ -1,4 +1,5 @@
 import Submission.Spec
+set_option autoImplicit true
 
 /-!
 # The bridge: statement shape ↔ spec shape (R2125607414)

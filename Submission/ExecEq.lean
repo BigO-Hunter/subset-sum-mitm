@@ -1,5 +1,6 @@
 import Submission.Bench
 import Submission.Det
+set_option autoImplicit true
 
 /-!
 # The bench mirror IS the statement's `exec` (R2125607414)

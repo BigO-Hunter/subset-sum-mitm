@@ -1,4 +1,5 @@
 import Submission.SubsetSumStatement
+set_option autoImplicit true
 
 /-!
 # The MITM program, part 1: assembly DSL + relocation bootstrap (R2125607414)

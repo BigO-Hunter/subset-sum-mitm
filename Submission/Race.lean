@@ -13,6 +13,7 @@ import Submission.PhaseA
 import Submission.PhaseB
 import Submission.SmallN
 import Submission.Runtime
+set_option autoImplicit true
 
 /-!
 # The summit: Race_bound — SolvedInTime (3/4)

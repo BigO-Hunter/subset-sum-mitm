@@ -1,4 +1,5 @@
 import Submission.PhaseB
+set_option autoImplicit true
 
 /-!
 # The small-n unrolled verdicts (R2125607414)

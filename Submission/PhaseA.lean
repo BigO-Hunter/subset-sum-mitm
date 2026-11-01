@@ -1,6 +1,7 @@
 import Submission.Prologue
 import Submission.Sort
 import Submission.Fit
+set_option autoImplicit true
 
 /-!
 # Phase A: the doubling-merge mountain (R2125607414)

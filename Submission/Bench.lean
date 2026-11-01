@@ -1,4 +1,5 @@
 import Submission.Program
+set_option autoImplicit true
 
 /-!
 # Test bench (R2125607414): run the emitted program on concrete instances.

@@ -2,6 +2,7 @@ import Submission.Prologue
 import Submission.PhaseA
 import Submission.Sort
 import Submission.Words
+set_option autoImplicit true
 
 /-!
 # Phase B: binary search + the correctness bridge (R2125607414)
