@@ -1,0 +1,45 @@
+{"plugins": [],
+ "package": "subsetsum",
+ "options": {},
+ "name": "Submission",
+ "isModule": false,
+ "importArts":
+ {"Submission.Words":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Words.olean"]],
+  "Submission.SubsetSumStatement":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/SubsetSumStatement.olean",
+    "/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/SubsetSumStatement.olean.server",
+    "/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/SubsetSumStatement.olean.private"],
+   ["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/SubsetSumStatement.ir.sig",
+    "/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/SubsetSumStatement.ir"]],
+  "Submission.Spec":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Spec.olean"]],
+  "Submission.Sort":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Sort.olean"]],
+  "Submission.SmallN":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/SmallN.olean"]],
+  "Submission.Runtime":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Runtime.olean"]],
+  "Submission.Race":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Race.olean"]],
+  "Submission.Prologue":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Prologue.olean"]],
+  "Submission.Program":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Program.olean"]],
+  "Submission.ProgFacts":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/ProgFacts.olean"]],
+  "Submission.PhaseB":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/PhaseB.olean"]],
+  "Submission.PhaseA":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/PhaseA.olean"]],
+  "Submission.Fit":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Fit.olean"]],
+  "Submission.ExecEq":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/ExecEq.olean"]],
+  "Submission.Det":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Det.olean"]],
+  "Submission.Bridge":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Bridge.olean"]],
+  "Submission.Bench":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Bench.olean"]]},
+ "dynlibs": []}

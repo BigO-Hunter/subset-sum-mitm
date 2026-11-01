@@ -1,0 +1,58 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["e627e4d13e8e4213.olean"],
+  "m": false,
+  "i": "0e18fa203570cc8a.ilean",
+  "c": "f04dbcacff049c7e.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=/private/tmp/multiaim-subset-sum/.lake/build/lib/lean /Users/dmitri.arkhipov/.elan/toolchains/leanprover--lean4---v4.34.1/bin/lean /private/tmp/multiaim-subset-sum/Submission/PhaseA.lean -o /private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/PhaseA.olean -i /private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/PhaseA.ilean -c /private/tmp/multiaim-subset-sum/.lake/build/ir/Submission/PhaseA.c --setup /private/tmp/multiaim-subset-sum/.lake/build/ir/Submission/PhaseA.setup.json --json",
+   "level": "trace"},
+  {"message":
+   "Submission/PhaseA.lean:248:24: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseA.lean:265:24: `if_pos` has been deprecated: Use `ite_eq_left` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseA.lean:625:44: Variable name `v` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _v\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseA.lean:625:54: Variable name `hd` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _hd\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseA.lean:626:5: Variable name `hfit` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _hfit\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseA.lean:1053:14: `if_pos` has been deprecated: Use `ite_eq_left` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseA.lean:1058:14: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"}],
+ "inputs":
+ [["deps",
+   [["subsetsum/Submission:extraDep",
+     [["@subsetsum:extraDep", "00000000000006bb"]]],
+    ["imports",
+     [["Submission.Prologue transitive imports (legacy)", "66359a9728e024d2"],
+      ["Submission.Prologue:importAllArts", "5fe8aaf09de26836"],
+      ["Submission.Sort transitive imports (legacy)", "c5da4b8a28d0ec88"],
+      ["Submission.Sort:importAllArts", "5e5c4dfb7d9ddb4f"],
+      ["Submission.Fit transitive imports (legacy)", "fa288c6308bf2e15"],
+      ["Submission.Fit:importAllArts", "c2b62e65f449633a"]]]]],
+  ["libs",
+   [["import dynlibs", "00000000000006bb"],
+    ["package external libraries", "00000000000006bb"],
+    ["module dynlibs", "00000000000006bb"],
+    ["module plugins", "00000000000006bb"]]],
+  ["Lean 4.34.1, commit 5045d0056413266e57c625dcd7c365b10e377c52",
+   "e9f3658beb070375"],
+  ["/private/tmp/multiaim-subset-sum/Submission/PhaseA.lean",
+   "ff851c10c8efc632"],
+  ["options", "00000000000006bb"],
+  ["isModule: false", "feefd2a0d3a1847e"],
+  ["Module.name: Submission.PhaseA", "b30b3b818850fc33"],
+  ["Package.id?: (some subsetsum)", "b93078239b8ec3db"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "e443adb1717d4a62"}

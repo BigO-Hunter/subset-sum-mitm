@@ -1,0 +1,17 @@
+{"plugins": [],
+ "package": "subsetsum",
+ "options": {},
+ "name": "Submission.ProgFacts",
+ "isModule": false,
+ "importArts":
+ {"Submission.SubsetSumStatement":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/SubsetSumStatement.olean",
+    "/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/SubsetSumStatement.olean.server",
+    "/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/SubsetSumStatement.olean.private"],
+   ["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/SubsetSumStatement.ir.sig",
+    "/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/SubsetSumStatement.ir"]],
+  "Submission.Program":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Program.olean"]],
+  "Submission.Det":
+  [["/private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Det.olean"]]},
+ "dynlibs": []}

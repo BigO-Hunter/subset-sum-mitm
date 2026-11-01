@@ -1,0 +1,69 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["563f7a50b59fc8c5.olean"],
+  "m": false,
+  "i": "7e45317c419849e5.ilean",
+  "c": "1ab2c2f690ff6ca9.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=/private/tmp/multiaim-subset-sum/.lake/build/lib/lean /Users/dmitri.arkhipov/.elan/toolchains/leanprover--lean4---v4.34.1/bin/lean /private/tmp/multiaim-subset-sum/Submission/Spec.lean -o /private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Spec.olean -i /private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/Spec.ilean -c /private/tmp/multiaim-subset-sum/.lake/build/ir/Submission/Spec.c --setup /private/tmp/multiaim-subset-sum/.lake/build/ir/Submission/Spec.setup.json --json",
+   "level": "trace"},
+  {"message":
+   "Submission/Spec.lean:51:19: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/Spec.lean:62:10: `if_pos` has been deprecated: Use `ite_eq_left` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/Spec.lean:65:10: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/Spec.lean:73:21: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/Spec.lean:74:28: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/Spec.lean:90:21: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/Spec.lean:91:28: `if_pos` has been deprecated: Use `ite_eq_left` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/Spec.lean:135:21: `if_pos` has been deprecated: Use `ite_eq_left` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/Spec.lean:138:21: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/Spec.lean:150:19: `if_pos` has been deprecated: Use `ite_eq_left` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/Spec.lean:152:19: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/Spec.lean:167:19: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"}],
+ "inputs":
+ [["deps",
+   [["subsetsum/Submission:extraDep",
+     [["@subsetsum:extraDep", "00000000000006bb"]]],
+    ["imports",
+     [["Submission.SubsetSumStatement transitive imports (legacy)",
+       "00000000000006bb"],
+      ["Submission.SubsetSumStatement:importAllArts", "fd9bfc3c3004643f"]]]]],
+  ["libs",
+   [["import dynlibs", "00000000000006bb"],
+    ["package external libraries", "00000000000006bb"],
+    ["module dynlibs", "00000000000006bb"],
+    ["module plugins", "00000000000006bb"]]],
+  ["Lean 4.34.1, commit 5045d0056413266e57c625dcd7c365b10e377c52",
+   "e9f3658beb070375"],
+  ["/private/tmp/multiaim-subset-sum/Submission/Spec.lean", "2cbaa00f57afdd1c"],
+  ["options", "00000000000006bb"],
+  ["isModule: false", "feefd2a0d3a1847e"],
+  ["Module.name: Submission.Spec", "e7c11deba39971a0"],
+  ["Package.id?: (some subsetsum)", "b93078239b8ec3db"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "e4bb3a0ac9ab0b70"}

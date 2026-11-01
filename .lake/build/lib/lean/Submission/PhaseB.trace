@@ -1,0 +1,90 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["8f5e0991e6113ad4.olean"],
+  "m": false,
+  "i": "1d655304ba06830e.ilean",
+  "c": "44a6523dcd827195.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=/private/tmp/multiaim-subset-sum/.lake/build/lib/lean /Users/dmitri.arkhipov/.elan/toolchains/leanprover--lean4---v4.34.1/bin/lean /private/tmp/multiaim-subset-sum/Submission/PhaseB.lean -o /private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/PhaseB.olean -i /private/tmp/multiaim-subset-sum/.lake/build/lib/lean/Submission/PhaseB.ilean -c /private/tmp/multiaim-subset-sum/.lake/build/ir/Submission/PhaseB.c --setup /private/tmp/multiaim-subset-sum/.lake/build/ir/Submission/PhaseB.setup.json --json",
+   "level": "trace"},
+  {"message":
+   "Submission/PhaseB.lean:139:8: `if_pos` has been deprecated: Use `ite_eq_left` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:143:10: `if_pos` has been deprecated: Use `ite_eq_left` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:153:10: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:153:29: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:155:10: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:155:29: `if_pos` has been deprecated: Use `ite_eq_left` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:185:6: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:352:51: Variable name `L` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _L\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:354:43: Variable name `hf16` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _hf16\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:354:62: Variable name `hf18` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _hf18\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:833:46: Variable name `hf2` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _hf2\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:1011:15: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:1137:49: Variable name `x` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _x\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:1461:12: `if_neg` has been deprecated: Use `ite_eq_right` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:1554:12: `if_pos` has been deprecated: Use `ite_eq_left` instead",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:2067:47: This simp argument is unused:\n  Nat.sub_self\n\nHint: Omit it from the simp argument list.\n  [apply] simp only [Nat.sub_sub, Nat.reduceAdd]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "Submission/PhaseB.lean:2161:47: This simp argument is unused:\n  Nat.sub_self\n\nHint: Omit it from the simp argument list.\n  [apply] simp only [Nat.sub_sub, Nat.reduceAdd]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"}],
+ "inputs":
+ [["deps",
+   [["subsetsum/Submission:extraDep",
+     [["@subsetsum:extraDep", "00000000000006bb"]]],
+    ["imports",
+     [["Submission.Prologue transitive imports (legacy)", "66359a9728e024d2"],
+      ["Submission.Prologue:importAllArts", "5fe8aaf09de26836"],
+      ["Submission.PhaseA transitive imports (legacy)", "023bbd0f18055ab2"],
+      ["Submission.PhaseA:importAllArts", "2030dca7db71edca"],
+      ["Submission.Sort transitive imports (legacy)", "c5da4b8a28d0ec88"],
+      ["Submission.Sort:importAllArts", "5e5c4dfb7d9ddb4f"],
+      ["Submission.Words transitive imports (legacy)", "46fcc3c99ef44224"],
+      ["Submission.Words:importAllArts", "cada7dd94784f3d7"]]]]],
+  ["libs",
+   [["import dynlibs", "00000000000006bb"],
+    ["package external libraries", "00000000000006bb"],
+    ["module dynlibs", "00000000000006bb"],
+    ["module plugins", "00000000000006bb"]]],
+  ["Lean 4.34.1, commit 5045d0056413266e57c625dcd7c365b10e377c52",
+   "e9f3658beb070375"],
+  ["/private/tmp/multiaim-subset-sum/Submission/PhaseB.lean",
+   "8c8fa009f594a763"],
+  ["options", "00000000000006bb"],
+  ["isModule: false", "feefd2a0d3a1847e"],
+  ["Module.name: Submission.PhaseB", "ceb8a3cc4436e2b3"],
+  ["Package.id?: (some subsetsum)", "b93078239b8ec3db"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "e08874159d53b144"}

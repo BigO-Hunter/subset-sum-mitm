@@ -647,4 +647,14 @@ theorem Race_bound : SolvedInTime (75 / 100 : Rat) := by
     exact ⟨fun n => Runtime.stepBound n + Runtime.constOverhead,
       runtime_bound, fun n x hn _ ρ => prog_halts n x hn ρ⟩
 
+/-- The filed bound is the reduced literal: 75/100 and 3/4 are equal Rats
+(the literals are not defeq — Rat.div is not kernel-reducible — so bridge
+through div_def/inv_def/mul_def to Int arithmetic). -/
+theorem rat75 : (75 / 100 : Rat) = (3 / 4 : Rat) := by
+  rw [Rat.div_def, Rat.div_def, Rat.inv_def, Rat.inv_def, Rat.mul_def, Rat.mul_def]
+  decide
+
+theorem Race_bound_reduced : SolvedInTime (3 / 4 : Rat) :=
+  rat75 ▸ Race_bound
+
 end SubsetSum.MITM
