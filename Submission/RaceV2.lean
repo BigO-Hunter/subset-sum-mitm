@@ -614,6 +614,297 @@ theorem scanLoop_accepts {w n : Nat} (ρ : Nat → BitVec w)
         rw [hAeq q hq, hBeq q' hq']
         exact hpair q hq q' hq'
 
+
+/-! ## §C. The from-148 discharge -/
+
+/-- Subset sums of `k` values each `≤ bound` are `≤ k * bound`. -/
+theorem choiceSum_le {a : Nat → Nat} {S : Nat → Bool} {k bound : Nat}
+    (hb : ∀ i, i < k → (if S i then a i else 0) ≤ bound) :
+    choiceSum a S k ≤ k * bound := by
+  unfold choiceSum
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    rw [List.range_succ, List.map_append, List.sum_append, List.map_singleton,
+      List.sum_singleton]
+    have hIH := ih (fun i hi => hb i (by omega))
+    have hk := hb k (by omega)
+    have hsplit : (k + 1) * bound = k * bound + bound := by
+      rw [Nat.add_mul, Nat.one_mul]
+    omega
+
+/-- scanB's 7-step setup (pcs 231→238): straight-line register writes, no
+branches.  Exports the loop-entry pins `scanLoop_accepts` consumes. -/
+theorem scanB_setup7 {w n : Nat} (ρ : Nat → BitVec w)
+    (bd1 bd2 t0 : Nat) (f : Nat → Nat) (r S : Nat)
+    (hbd2 : 22 < bd2)
+    (h1 : f 1 = 1) (h2 : f 2 = 0) (h6 : f 6 = bd1) (h7 : f 7 = n)
+    (h8 : f 8 = 2 * n + 23) (h9 : f 9 = n / 2)
+    (h11 : f 11 = 2 ^ (n - n / 2)) (h19 : f 19 = bd2)
+    (ht0 : f (3 * n + 24) = t0)
+    (hfit : ∀ q, f q < 2 ^ w)
+    (hb2 : bd2 + 2 ^ (n - n / 2) ≤ BD2 n + 2 * 2 ^ (n - n / 2) + 1)
+    (haddr : ∀ c, c ≤ BD2 n + 2 * 2 ^ (n - n / 2) + 1 → c < 2 ^ w)
+    (hS : 7 ≤ S) :
+    ∃ g : Nat → Nat,
+      exec prog2 ρ S 231 r (memOf w f) = exec prog2 ρ (S - 7) 238 r (memOf w g) ∧
+      g 1 = 1 ∧ g 2 = 0 ∧ g 6 = bd1 ∧ g 12 = 0 ∧
+      g 13 = bd2 + 2 ^ (n - n / 2) ∧ g 17 = t0 ∧ g 19 = bd2 ∧
+      g 22 = 2 ^ (n / 2) ∧ g (3 * n + 24) = t0 ∧
+      (∀ q, g q < 2 ^ w) ∧
+      (∀ c, c ≤ bd2 + 2 ^ (n - n / 2) → c < 2 ^ w) := by
+  have hBD : BD2 n = 3 * n + 25 + 2 * 2 ^ (n / 2) + 2 := rfl
+  have hpowHalf : 2 ^ (n / 2) ≤ 2 ^ (n - n / 2) :=
+    Nat.pow_le_pow_right (by omega) (by omega)
+  have h0lt : (0:Nat) < 2 ^ w := Nat.one_le_two_pow (n := w)
+  have h1lt : (1:Nat) < 2 ^ w := by
+    rw [← h1]; exact hfit 1
+  have henv : ∀ c, c ≤ bd2 + 2 ^ (n - n / 2) → c < 2 ^ w := by
+    intro c hc; exact haddr c (by omega)
+  -- the 7-step setup walk (pcs 231..237)
+  obtain ⟨G7, hG7def⟩ : ∃ g : Nat → Nat,
+      g = (up (up (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+        20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 22 1) 22 (2 ^ (n / 2))) :=
+    ⟨_, rfl⟩
+  have fit1 : ∀ q, (up f 12 0) q < 2 ^ w := up_fit hfit h0lt
+  have fit2 : ∀ q, (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) q < 2 ^ w :=
+    up_fit fit1 (henv (bd2 + 2 ^ (n - n / 2)) (by omega))
+  have fit3 : ∀ q,
+      (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) 20 (3 * n + 23)) q
+        < 2 ^ w := up_fit fit2 (haddr (3 * n + 23) (by omega))
+  have fit4 : ∀ q,
+      (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) 20 (3 * n + 23))
+        20 (3 * n + 24)) q < 2 ^ w := up_fit fit3 (haddr (3 * n + 24) (by omega))
+  have ht0l : t0 < 2 ^ w := by rw [← ht0]; exact hfit (3 * n + 24)
+  have fit5 : ∀ q,
+      (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+        20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) q < 2 ^ w := up_fit fit4 ht0l
+  have fit6 : ∀ q,
+      (up (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+        20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 22 1) q < 2 ^ w :=
+    up_fit fit5 h1lt
+  have fit7 : ∀ q, G7 q < 2 ^ w := by
+    intro q; rw [hG7def]
+    exact up_fit (c := 22) fit6 (haddr (2 ^ (n / 2)) (by omega)) q
+  have hmul237 :
+      (up (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+        20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 22 1) 22
+        * 2 ^ (up (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+        20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 22 1) 9
+      < 2 ^ w := by
+    rw [up_eq, up_ne (show (9:Nat) ≠ 22 by omega),
+        up_ne (show (9:Nat) ≠ 17 by omega),
+        up_ne (show (9:Nat) ≠ 20 by omega),
+        up_ne (show (9:Nat) ≠ 20 by omega),
+        up_ne (show (9:Nat) ≠ 13 by omega),
+        up_ne (show (9:Nat) ≠ 12 by omega), h9, Nat.one_mul]
+    have hb : 2 ^ (n / 2) ≤ BD2 n + 2 * 2 ^ (n - n / 2) + 1 := by
+      rw [hBD]; omega
+    exact Nat.lt_of_le_of_lt hb (haddr _ (Nat.le_refl _))
+  have e231 : exec prog2 ρ S 231 r (memOf w f)
+      = exec prog2 ρ (S - 1) 232 r (memOf w (up f 12 (f 12 - f 12))) :=
+    exec_sub_step (S := S) (by omega)
+      (show prog2.getD 231 Instr.reject = Instr.sub 12 12 12 by rfl) hfit
+      (by omega)
+  have n231 : up f 12 (f 12 - f 12) = (up f 12 0) := by
+    rw [show f 12 - f 12 = 0 from by omega]
+  have e232 : exec prog2 ρ (S - 1) 232 r (memOf w (up f 12 0))
+      = exec prog2 ρ (S - 1 - 1) 233 r
+          (memOf w (up (up f 12 0) 13
+            ((up f 12 0) 19 + (up f 12 0) 11))) :=
+    exec_add_step (S := S - 1) (by omega)
+      (show prog2.getD 232 Instr.reject = Instr.add 13 19 11 by rfl)
+  have n232 : (up f 12 0) 19 + (up f 12 0) 11 = bd2 + 2 ^ (n - n / 2) := by
+    rw [up_ne (show (19:Nat) ≠ 12 by omega), h19,
+        up_ne (show (11:Nat) ≠ 12 by omega), h11]
+  have e233 : exec prog2 ρ (S - 1 - 1) 233 r
+          (memOf w (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))))
+      = exec prog2 ρ (S - 1 - 1 - 1) 234 r
+          (memOf w (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) 20
+            ((up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) 8
+              + (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) 7))) :=
+    exec_add_step (S := S - 1 - 1) (by omega)
+      (show prog2.getD 233 Instr.reject = Instr.add 20 8 7 by rfl)
+  have n233 : (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) 8
+        + (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) 7 = 3 * n + 23 := by
+    rw [up_ne (show (8:Nat) ≠ 13 by omega),
+        up_ne (show (8:Nat) ≠ 12 by omega), h8,
+        up_ne (show (7:Nat) ≠ 13 by omega),
+        up_ne (show (7:Nat) ≠ 12 by omega), h7]
+    omega
+  have e234 : exec prog2 ρ (S - 1 - 1 - 1) 234 r
+          (memOf w (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+            20 (3 * n + 23)))
+      = exec prog2 ρ (S - 1 - 1 - 1 - 1) 235 r
+          (memOf w (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+            20 (3 * n + 23)) 20
+            ((up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) 20 (3 * n + 23)) 20
+              + (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) 20 (3 * n + 23))
+                1))) :=
+    exec_add_step (S := S - 1 - 1 - 1) (by omega)
+      (show prog2.getD 234 Instr.reject = Instr.add 20 20 1 by rfl)
+  have n234 : (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) 20 (3 * n + 23)) 20
+        + (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) 20 (3 * n + 23)) 1
+      = 3 * n + 24 := by
+    rw [up_eq, up_ne (show (1:Nat) ≠ 20 by omega),
+        up_ne (show (1:Nat) ≠ 13 by omega),
+        up_ne (show (1:Nat) ≠ 12 by omega), h1]
+  have e235 : exec prog2 ρ (S - 1 - 1 - 1 - 1) 235 r
+          (memOf w (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+            20 (3 * n + 23)) 20 (3 * n + 24)))
+      = exec prog2 ρ (S - 1 - 1 - 1 - 1 - 1) 236 r
+          (memOf w (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+            20 (3 * n + 23)) 20 (3 * n + 24)) 17
+            ((up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+              20 (3 * n + 23)) 20 (3 * n + 24))
+              ((up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+                20 (3 * n + 23)) 20 (3 * n + 24)) 20)))) :=
+    exec_load_step (S := S - 1 - 1 - 1 - 1) (by omega)
+      (show prog2.getD 235 Instr.reject = Instr.load 17 20 by rfl) fit4
+  have n235 : (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+        20 (3 * n + 23)) 20 (3 * n + 24))
+        ((up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2))) 20 (3 * n + 23))
+          20 (3 * n + 24)) 20)
+      = t0 := by
+    rw [up_eq,
+        up_ne (show (3 * n + 24 : Nat) ≠ 20 by omega),
+        up_ne (show (3 * n + 24 : Nat) ≠ 20 by omega),
+        up_ne (show (3 * n + 24 : Nat) ≠ 13 by omega),
+        up_ne (show (3 * n + 24 : Nat) ≠ 12 by omega), ht0]
+  have e236 : exec prog2 ρ (S - 1 - 1 - 1 - 1 - 1) 236 r
+          (memOf w (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+            20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0))
+      = exec prog2 ρ (S - 1 - 1 - 1 - 1 - 1 - 1) 237 r
+          (memOf w (up (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+            20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 22
+            ((up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+              20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 1
+              + (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+                20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 2))) :=
+    exec_add_step (S := S - 1 - 1 - 1 - 1 - 1) (by omega)
+      (show prog2.getD 236 Instr.reject = Instr.add 22 1 2 by rfl)
+  have n236 : (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+        20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 1
+        + (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+          20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 2
+      = 1 := by
+    rw [up_ne (show (1:Nat) ≠ 17 by omega),
+        up_ne (show (1:Nat) ≠ 20 by omega),
+        up_ne (show (1:Nat) ≠ 20 by omega),
+        up_ne (show (1:Nat) ≠ 13 by omega),
+        up_ne (show (1:Nat) ≠ 12 by omega), h1,
+        up_ne (show (2:Nat) ≠ 17 by omega),
+        up_ne (show (2:Nat) ≠ 20 by omega),
+        up_ne (show (2:Nat) ≠ 20 by omega),
+        up_ne (show (2:Nat) ≠ 13 by omega),
+        up_ne (show (2:Nat) ≠ 12 by omega), h2]
+  have e237 : exec prog2 ρ (S - 1 - 1 - 1 - 1 - 1 - 1) 237 r
+          (memOf w (up (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+            20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 22 1))
+      = exec prog2 ρ (S - 7) 238 r
+          (memOf w (up (up (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+            20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 22 1) 22
+            ((up (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+              20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 22 1) 22
+              * 2 ^ (up (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+                20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 22 1) 9))) :=
+    exec_shl_step (S := S - 1 - 1 - 1 - 1 - 1 - 1) (by omega)
+      (show prog2.getD 237 Instr.reject = Instr.shl 22 22 9 by rfl) fit6
+      hmul237
+  have n237 : (up (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+        20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 22 1) 22
+        * 2 ^ (up (up (up (up (up (up f 12 0) 13 (bd2 + 2 ^ (n - n / 2)))
+          20 (3 * n + 23)) 20 (3 * n + 24)) 17 t0) 22 1) 9
+      = 2 ^ (n / 2) := by
+    rw [up_eq, up_ne (show (9:Nat) ≠ 22 by omega),
+        up_ne (show (9:Nat) ≠ 17 by omega),
+        up_ne (show (9:Nat) ≠ 20 by omega),
+        up_ne (show (9:Nat) ≠ 20 by omega),
+        up_ne (show (9:Nat) ≠ 13 by omega),
+        up_ne (show (9:Nat) ≠ 12 by omega), h9, Nat.one_mul]
+  have hsetup : exec prog2 ρ S 231 r (memOf w f)
+      = exec prog2 ρ (S - 7) 238 r (memOf w G7) := by
+    rw [e231, n231, e232, n232, e233, n233, e234, n234, e235, n235, e236,
+      n236, e237, n237, ← hG7def]
+  refine ⟨G7, hsetup, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · rw [hG7def, up_ne (show (1:Nat) ≠ 22 by omega),
+      up_ne (show (1:Nat) ≠ 22 by omega),
+      up_ne (show (1:Nat) ≠ 17 by omega),
+      up_ne (show (1:Nat) ≠ 20 by omega),
+      up_ne (show (1:Nat) ≠ 20 by omega),
+      up_ne (show (1:Nat) ≠ 13 by omega),
+      up_ne (show (1:Nat) ≠ 12 by omega), h1]
+  · rw [hG7def, up_ne (show (2:Nat) ≠ 22 by omega),
+      up_ne (show (2:Nat) ≠ 22 by omega),
+      up_ne (show (2:Nat) ≠ 17 by omega),
+      up_ne (show (2:Nat) ≠ 20 by omega),
+      up_ne (show (2:Nat) ≠ 20 by omega),
+      up_ne (show (2:Nat) ≠ 13 by omega),
+      up_ne (show (2:Nat) ≠ 12 by omega), h2]
+  · rw [hG7def, up_ne (show (6:Nat) ≠ 22 by omega),
+      up_ne (show (6:Nat) ≠ 22 by omega),
+      up_ne (show (6:Nat) ≠ 17 by omega),
+      up_ne (show (6:Nat) ≠ 20 by omega),
+      up_ne (show (6:Nat) ≠ 20 by omega),
+      up_ne (show (6:Nat) ≠ 13 by omega),
+      up_ne (show (6:Nat) ≠ 12 by omega), h6]
+  · rw [hG7def, up_ne (show (12:Nat) ≠ 22 by omega),
+      up_ne (show (12:Nat) ≠ 22 by omega),
+      up_ne (show (12:Nat) ≠ 17 by omega),
+      up_ne (show (12:Nat) ≠ 20 by omega),
+      up_ne (show (12:Nat) ≠ 20 by omega),
+      up_ne (show (12:Nat) ≠ 13 by omega), up_eq]
+  · rw [hG7def, up_ne (show (13:Nat) ≠ 22 by omega),
+      up_ne (show (13:Nat) ≠ 22 by omega),
+      up_ne (show (13:Nat) ≠ 17 by omega),
+      up_ne (show (13:Nat) ≠ 20 by omega),
+      up_ne (show (13:Nat) ≠ 20 by omega), up_eq]
+  · rw [hG7def, up_ne (show (17:Nat) ≠ 22 by omega),
+      up_ne (show (17:Nat) ≠ 22 by omega), up_eq]
+  · rw [hG7def, up_ne (show (19:Nat) ≠ 22 by omega),
+      up_ne (show (19:Nat) ≠ 22 by omega),
+      up_ne (show (19:Nat) ≠ 17 by omega),
+      up_ne (show (19:Nat) ≠ 20 by omega),
+      up_ne (show (19:Nat) ≠ 20 by omega),
+      up_ne (show (19:Nat) ≠ 13 by omega),
+      up_ne (show (19:Nat) ≠ 12 by omega), h19]
+  · rw [hG7def, up_eq]
+  · rw [hG7def, up_ne (show (3 * n + 24 : Nat) ≠ 22 by omega),
+      up_ne (show (3 * n + 24 : Nat) ≠ 22 by omega),
+      up_ne (show (3 * n + 24 : Nat) ≠ 17 by omega),
+      up_ne (show (3 * n + 24 : Nat) ≠ 20 by omega),
+      up_ne (show (3 * n + 24 : Nat) ≠ 20 by omega),
+      up_ne (show (3 * n + 24 : Nat) ≠ 13 by omega),
+      up_ne (show (3 * n + 24 : Nat) ≠ 12 by omega), ht0]
+  · intro q
+    exact fit7 q
+  · intro c hc
+    have hbe : bd2 ≤ BD2 n + 2 * 2 ^ (n - n / 2) + 1 := by have := hb2; omega
+    by_cases h12c : c = 12
+    · subst h12c
+      exact Nat.lt_of_le_of_lt (by omega) (haddr _ hbe)
+    by_cases h13c : c = 13
+    · subst h13c
+      exact Nat.lt_of_le_of_lt (by omega) (haddr _ hbe)
+    by_cases h20c : c = 20
+    · subst h20c
+      exact Nat.lt_of_le_of_lt (by omega) (haddr _ hbe)
+    by_cases h17c : c = 17
+    · subst h17c
+      exact Nat.lt_of_le_of_lt (by omega) (haddr _ hbe)
+    by_cases h22c : c = 22
+    · subst h22c
+      exact Nat.lt_of_le_of_lt (by omega) (haddr _ hbe)
+    · exact haddr c (Nat.le_trans hc hb2)
+
 #print axioms scanLoop_accepts
+#print axioms scanB_setup7
+#print axioms choiceSum_le
+#print axioms scanLoop_accepts
+#print axioms scanB_setup7
+#print axioms choiceSum_le
+#print axioms scanLoop_accepts
+#print axioms scanB_setup7
+#print axioms choiceSum_le
 
 end SubsetSum.MITM
