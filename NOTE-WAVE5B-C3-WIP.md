@@ -95,3 +95,26 @@ parse error), for the decide-shaped summit statement (Race.lean idiom).
 - Axioms: bign_run2_from148 will carry Classical.choice (decide-shaped
   summit, `open scoped Classical in` — Race.lean's Race_bound does the
   same). Everything else stays [propext, Quot.sound].
+
+## UPDATE (post-first-fix-pass — read this too)
+
+The WIP at /private/tmp/opencode/RaceV2.wip-c3.lean has had a fix-pass
+applied but introduced TWO duplications (fix in this order):
+1. arrL_length/arrL_val are now declared TWICE (my fix-pass added fresh
+   copies before the §C2 docstring while the WIP already carried older
+   getElem-based ones at the old §C2 position). DELETE the older pair —
+   the KEEPERS are the ones immediately before `/-! ### §C2.`:
+   arrL_length (unfold arrL; simp) and arrL_val in the `?`-form with
+   `all_goals simp [hq]` closing. DELETE the old `arrL_getElem` and the
+   old getElem-based `arrL_val` (both sit in the older §C2 helper region).
+2. setup7's pin bullets: the g7/g11 bullets now exist TWICE (the move-insert
+   and the exp-insert both added them after the gT bullet). Bullet list
+   must be exactly: g1,g2,g6,g12,g13,g17,g19,g22,gT,g7,g11,g8,g9,
+   cellpres(intro q hq),fit(intro q),c(intro c hc) = 16 bullets for the
+   16-hole refine (statement has g7/g11 between gT and g8 — already in).
+3. After those dedups the remaining known errors are only: the fuel omegas
+   need hbc/hBnn1/hBnn2/hpow2 BEFORE the phaseA2/canon/setup7 applications
+   (the fix-pass moved them — verify they precede the phaseA2 obtain),
+   and hpresAB/hpresT''/hgT-name alignment as described above.
+Everything else (statement, soundness, completeness structure, fuel
+budgets) is committed-green or fully drafted in the WIP.
