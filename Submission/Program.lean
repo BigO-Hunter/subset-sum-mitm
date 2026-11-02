@@ -466,5 +466,205 @@ def smallN : List Line :=
 small-n verdict section. -/
 def prog : List Instr := resolve (prologue ++ phaseA ++ phaseB ++ smallN)
 
+/-! ## v2 (α = 1/2): phaseA2 + canon + scanB replace phaseB
+
+Compile-only at task S8 (gap map): no exec proofs yet.  phaseA2 is a
+structural clone of `phaseA` (identical round body, round counter
+carried from `rK = h+1` so the source-address idiom `mem[RELOC + rK]`
+is literally phaseA's; bound register `n+1` instead of `h+1`).  `canon`
+is the M1-hypothesis clamp pass (pending semantics pin — see M1 in the
+gap map; do not prove against this shape until M1 confirms).  `scanB`
+is the two-pointer sweep with the reject-at-j=0 rule encoded as
+`rJ = rDST` (the B-array one-past-walker).
+
+New labels 70–90 (taken: 2–3, 10–21, 30–40, 50–64).  Register notes:
+`rVAL` (cell 6, free after the prologue) carries the first-half base
+`bd1` across phaseA2 (PH2's `hbase : f0 18 = bd1` entry fact); phaseA2
+ends with `rDST := ` the final second-half array location, so PH2's
+post-state `f' 19 = bd2` holds, and `rL = 2^(n−n/2)` per `f' 11`. -/
+
+def L2ROUND  : Nat := 70
+def L2MERGE  : Nat := 71
+def L2HAVEJ  : Nat := 72
+def L2BOTH   : Nat := 73
+def L2TAKEJ  : Nat := 74
+def L2TAKEL  : Nat := 75
+def L2STEP   : Nat := 76
+def L2DRAINI : Nat := 77
+def L2DILOOP : Nat := 78
+def L2DRAINJ : Nat := 79
+def L2DJLOOP : Nat := 80
+def L2SWAP   : Nat := 81
+
+def LCN     : Nat := 82
+def LCN2    : Nat := 83
+def LCNS    : Nat := 84
+def LCNN    : Nat := 85
+def LCNDONE : Nat := 86
+
+def LSB    : Nat := 87
+def LSBODY : Nat := 88
+def LSGTR  : Nat := 89
+def LSLT   : Nat := 90
+
+/-- v2 second half: build the sorted subset sums of `a_{h+1}..a_n`
+(`2^(n−h)` entries) at a fresh base `bd2 = 3n+25+2^(h+1)+2` by the same
+doubling merges as phaseA.  Round counter `rK` continues from `h+1`
+(phaseA's exit value) up to `n`, so the per-round source load
+`mem[RELOC + rK]` is byte-identical to phaseA's. -/
+def phaseA2 : List Line :=
+  [ .raw (.add rVAL rSRC rZER)      -- save bd1 (first-half base) for canon/scanB
+  , .raw (.shl rT2 rONE rK)         -- 2^(h+1)   (rK = h+1 at phaseA exit)
+  , .raw (.add rSRC rRE rN)         -- 3n+23
+  , .raw (.add rSRC rSRC rT2)       -- + 2^(h+1)
+  , .raw (.add rSRC rSRC rONE)
+  , .raw (.add rSRC rSRC rONE)
+  , .raw (.add rSRC rSRC rONE)
+  , .raw (.add rSRC rSRC rONE)      -- bd2 = 3n+25+2^(h+1)+2
+  , .raw (.sub rT3 rN rH)           -- m2 = n−h (round bound)
+  , .raw (.add rT2 rONE rZER)
+  , .raw (.shl rT2 rT2 rT3)         -- 2^m2
+  , .raw (.add rDST rSRC rT2)       -- scratch := bd2 + 2^m2
+  , .raw (.add rDST rDST rONE)      -- DST := bd2 + 2^m2 + 1
+  , .raw (.add rL rONE rZER)        -- L := 1
+  , .raw (.add rT1 rSRC rZER)
+  , .raw (.store rT1 rZER)          -- S₀ := [0] at bd2
+  , .mark L2ROUND
+    -- a_{h+k} := mem[RELOC + rK]  (rK runs h+1..n) — identical to phaseA
+  , .raw (.add rT1 rRE rK)
+  , .raw (.load rAK rT1)
+  , .raw (.sub rI rI rI)
+  , .raw (.sub rJ rJ rJ)
+  , .raw (.sub rW rW rW)
+  , .mark L2MERGE
+  , .jblt rJ rL L2HAVEJ
+  , jmp L2DRAINI
+  , .mark L2HAVEJ
+  , .jblt rI rL L2BOTH
+  , jmp L2DRAINJ
+  , .mark L2BOTH
+  , .raw (.add rT1 rSRC rI)
+  , .raw (.load rVI rT1)
+  , .raw (.add rT2 rSRC rJ)
+  , .raw (.load rVJ rT2)
+  , .raw (.add rVJ rVJ rAK)
+  , .jblt rVJ rVI L2TAKEJ
+  , jmp L2TAKEL
+  , .mark L2TAKEJ
+  , .raw (.add rT1 rDST rW)
+  , .raw (.store rT1 rVJ)
+  , .raw (.add rJ rJ rONE)
+  , jmp L2STEP
+  , .mark L2TAKEL
+  , .raw (.add rT1 rDST rW)
+  , .raw (.store rT1 rVI)
+  , .raw (.add rI rI rONE)
+  , .mark L2STEP
+  , .raw (.add rW rW rONE)
+  , jmp L2MERGE
+  , .mark L2DRAINI
+  , .jblt rI rL L2DILOOP
+  , jmp L2SWAP
+  , .mark L2DILOOP
+  , .raw (.add rT1 rSRC rI)
+  , .raw (.load rVI rT1)
+  , .raw (.add rT2 rDST rW)
+  , .raw (.store rT2 rVI)
+  , .raw (.add rI rI rONE)
+  , .raw (.add rW rW rONE)
+  , .jblt rI rL L2DILOOP
+  , jmp L2SWAP
+  , .mark L2DRAINJ
+  , .mark L2DJLOOP
+  , .raw (.add rT2 rSRC rJ)
+  , .raw (.load rVJ rT2)
+  , .raw (.add rVJ rVJ rAK)
+  , .raw (.add rT1 rDST rW)
+  , .raw (.store rT1 rVJ)
+  , .raw (.add rJ rJ rONE)
+  , .raw (.add rW rW rONE)
+  , .jblt rJ rL L2DJLOOP
+  , .mark L2SWAP
+  , .raw (.add rL rL rL)            -- L := 2L  (ends at 2^m2)
+  , .raw (.add rT1 rSRC rZER)       -- swap src/dst
+  , .raw (.add rSRC rDST rZER)
+  , .raw (.add rDST rT1 rZER)
+  , .raw (.add rK rK rONE)
+  , .raw (.add rT2 rN rONE)         -- n+1 (round bound; phaseA used h+1)
+  , .jblt rK rT2 L2ROUND
+  , .raw (.add rDST rSRC rZER)      -- post-loop: rDST := final S_B location
+                                    -- (PH2 post-state f' 19 = bd2; rL = 2^m2)
+  ]
+
+/-- v2 canonicalization (M1-hypothesis shape — semantics NOT yet pinned):
+clamp the first-half array in place, entries above `t₀` become `t₀+1`,
+preserving sortedness and the ≤ t₀+1 envelope the sweep needs.
+Cost target (CAN): ≤ 6·2^h + 11 — 7 setup + ≤6 per element. -/
+def canon : List Line :=
+  [ .raw (.sub rW rW rW)            -- w := 0
+  , .raw (.add rT2 rONE rZER)
+  , .raw (.shl rT2 rT2 rH)          -- 2^h
+  , .raw (.add rT1 rRE rN)
+  , .raw (.add rT1 rT1 rONE)
+  , .raw (.load rVJ rT1)            -- t₀ := mem[RELOC+n+1]
+  , .raw (.add rT3 rVJ rONE)        -- t₀ + 1
+  , .mark LCN
+  , .jblt rW rT2 LCN2
+  , jmp LCNDONE
+  , .mark LCN2
+  , .raw (.add rT1 rVAL rW)         -- arr[bd1 + w]  (bd1 in rVAL from phaseA2)
+  , .raw (.load rVI rT1)
+  , .jblt rVJ rVI LCNS              -- t₀ < v → clamp
+  , jmp LCNN                        -- v ≤ t₀: keep
+  , .mark LCNS
+  , .raw (.store rT1 rT3)           -- arr[w] := t₀+1
+  , .mark LCNN
+  , .raw (.add rW rW rONE)
+  , jmp LCN
+  , .mark LCNDONE
+  ]
+
+/-- v2 sweep: two pointers over A (first half, clamped, at rVAL) and B
+(second half, at rDST), accept on `A[i]+B[j] = t₀`, reject on
+exhaustion.  `rJ` walks B downward from one-past-its-end; `rJ = rDST`
+is exactly the reject-at-j=0 rule (risk 3 — soundness rests on
+`halfSums_head_zero`, now in Sort.lean).  Per-iteration instruction
+count is 11–12, above the gap map's ≤10 sketch; the SCN/M1 constant
+re-derivation absorbs this (there is 2^(n/2)-coefficient slack in
+budget_compose2). -/
+def scanB : List Line :=
+  [ .raw (.sub rI rI rI)            -- i := 0
+  , .raw (.add rJ rDST rL)          -- rJ := bd2 + 2^(n−h)  (one past B)
+  , .raw (.add rT1 rRE rN)
+  , .raw (.add rT1 rT1 rONE)
+  , .raw (.load rAK rT1)            -- t₀ := mem[RELOC+n+1]
+  , .raw (.add rT3 rONE rZER)
+  , .raw (.shl rT3 rT3 rH)          -- 2^h
+  , .mark LSB
+  , .jblt rDST rJ LSBODY            -- bd2 < rJ ⟺ j not exhausted
+  , .raw (.reject)                  -- reject at j = 0 (risk 3)
+  , .mark LSBODY
+  , .raw (.add rT1 rVAL rI)
+  , .raw (.load rVI rT1)            -- A[i]
+  , .raw (.sub rT2 rJ rONE)
+  , .raw (.load rVJ rT2)            -- B[j]
+  , .raw (.add rVJ rVI rVJ)         -- s := A[i] + B[j]
+  , .jblt rAK rVJ LSGTR             -- t₀ < s → shrink j
+  , .jblt rVJ rAK LSLT              -- s < t₀ → grow i
+  , .raw (.accept)                  -- s = t₀
+  , .mark LSGTR
+  , .raw (.sub rJ rJ rONE)
+  , jmp LSB
+  , .mark LSLT
+  , .raw (.add rI rI rONE)
+  , .jblt rI rT3 LSB                -- i < 2^h → continue
+  , .raw (.reject)                  -- i exhausted
+  ]
+
+/-- The v2 program: phaseA2 + canon + scanB replace phaseB.  `progPA`
+and `prog` are untouched above, so Bench and the 3/4 submission path
+stay green until v2 replaces them. -/
+def prog2 : List Instr := resolve (prologue ++ phaseA ++ phaseA2 ++ canon ++ scanB ++ smallN)
+
 end SubsetSum.MITM
 
