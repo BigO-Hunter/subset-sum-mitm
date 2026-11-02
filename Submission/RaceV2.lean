@@ -897,12 +897,92 @@ theorem scanB_setup7 {w n : Nat} (ρ : Nat → BitVec w)
       exact Nat.lt_of_le_of_lt (by omega) (haddr _ hbe)
     · exact haddr c (Nat.le_trans hc hb2)
 
-#print axioms scanLoop_accepts
-#print axioms scanB_setup7
-#print axioms choiceSum_le
-#print axioms scanLoop_accepts
-#print axioms scanB_setup7
-#print axioms choiceSum_le
+
+/-! ### §C2. THE from-148 discharge
+
+The phaseA-exit contract (the shape `phaseA_exec` concludes, supplied here
+as hypotheses) plus the word-length envelope gives the EXACT membership
+verdict: soundness via `canon_pair_iff` + `mem_halfSums`, completeness via
+`isSum_split` + `scanLoop_accepts`. -/
+
+theorem arrL_mem {f : Nat → Nat} {b L q : Nat} (hq : q < L) :
+    f (b + q) ∈ arrL f b L := by
+  unfold arrL
+  exact List.mem_map_of_mem (List.mem_range.mpr hq)
+
+theorem arrL_mem_pos {f : Nat → Nat} {b L s : Nat}
+    (hmem : s ∈ arrL f b L) :
+    ∃ q, q < L ∧ f (b + q) = s := by
+  unfold arrL at hmem
+  obtain ⟨q, hq, hs⟩ := List.mem_map.mp hmem
+  exact ⟨q, List.mem_range.mp hq, hs⟩
+
+theorem clamp_le_succ (t0 v : Nat) : clamp t0 v ≤ t0 + 1 := by
+  unfold clamp
+  split <;> omega
+
+/-- Soundness of a sweep witness: the raw first-half sum (the cell value
+under canon's clamp) plus a second-half sum equals `t₀` iff the subset-sum
+decomposition holds. -/
+theorem isSum_of_witness {n : Nat} {x : Instance n}
+    {bd1 bd2 : Nat} {f' : Nat → Nat} {i jp : Nat} {t0 : Nat}
+    (hwit : f' (bd1 + i) + f' (bd2 + (jp - 1)) = t0)
+    (hi : i < 2 ^ (n / 2)) (hjp : jp - 1 < 2 ^ (n - n / 2))
+    (hA : arrL f' bd1 (2 ^ (n / 2)) = halfSums (instA x) (n / 2))
+    (hB : arrL f' bd2 (2 ^ (n - n / 2))
+      = halfSums (fun i => instA x (n / 2 + i)) (n - n / 2)) :
+    isSum (instA x) n t0 := by
+  have hmemA : f' (bd1 + i) ∈ halfSums (instA x) (n / 2) := by
+    have h1 := arrL_mem (f := f') (b := bd1) (L := 2 ^ (n / 2)) hi
+    rw [hA] at h1
+    exact h1
+  have hmemB : f' (bd2 + (jp - 1))
+      ∈ halfSums (fun i => instA x (n / 2 + i)) (n - n / 2) := by
+    have h1 := arrL_mem (f := f') (b := bd2) (L := 2 ^ (n - n / 2)) hjp
+    rw [hB] at h1
+    exact h1
+  have hisA : isSum (instA x) (n / 2) (f' (bd1 + i)) :=
+    (mem_halfSums _ _ _).mp hmemA
+  have hisB : isSum (fun i => instA x (n / 2 + i)) (n - n / 2)
+      (f' (bd2 + (jp - 1))) := (mem_halfSums _ _ _).mp hmemB
+  have hv : f' (bd1 + i) ≤ t0 := by omega
+  have hisB' : isSum (fun i => instA x (i + n / 2)) (n - n / 2)
+      (t0 - f' (bd1 + i)) := by
+    rw [show t0 - f' (bd1 + i) = f' (bd2 + (jp - 1)) from by omega]
+    have hcomm : (fun i => instA x (i + n / 2))
+        = (fun i => instA x (n / 2 + i)) := by
+      funext i; rw [Nat.add_comm]
+    rw [hcomm]
+    exact hisB
+  have hfinal := (isSum_split (instA x) (n / 2) (n - n / 2) t0).mpr
+    ⟨f' (bd1 + i), hv, hisA, hisB'⟩
+  have hnn : n / 2 + (n - n / 2) = n := by omega
+  rw [hnn] at hfinal
+  exact hfinal
+
+/-- Position of a half-sum in the A-array: the clamped cell holds it. -/
+theorem exists_clamped_pos {n : Nat} {x : Instance n} {bd1 : Nat}
+    {f' f'' : Nat → Nat} {s : Nat} {t0 : Nat}
+    (hA : arrL f' bd1 (2 ^ (n / 2)) = halfSums (instA x) (n / 2))
+    (hmap : arrL f'' bd1 (2 ^ (n / 2))
+      = (arrL f' bd1 (2 ^ (n / 2))).map (clamp t0))
+    (hmem : s ∈ halfSums (instA x) (n / 2)) :
+    ∃ q, q < 2 ^ (n / 2) ∧ f'' (bd1 + q) = clamp t0 s := by
+  have h2 : s ∈ arrL f' bd1 (2 ^ (n / 2)) := by rw [hA]; exact hmem
+  have h1 : clamp t0 s ∈ arrL f'' bd1 (2 ^ (n / 2)) := by
+    rw [hmap]; exact List.mem_map_of_mem h2
+  exact arrL_mem_pos h1
+
+/-- Position of a second-half sum in the B-array. -/
+theorem exists_B_pos {n : Nat} {x : Instance n} {bd2 : Nat} {f' : Nat → Nat}
+    {s : Nat}
+    (hB : arrL f' bd2 (2 ^ (n - n / 2))
+      = halfSums (fun i => instA x (n / 2 + i)) (n - n / 2))
+    (hmem : s ∈ halfSums (fun i => instA x (n / 2 + i)) (n - n / 2)) :
+    ∃ q, q < 2 ^ (n - n / 2) ∧ f' (bd2 + q) = s := by
+  have h1 : s ∈ arrL f' bd2 (2 ^ (n - n / 2)) := by rw [hB]; exact hmem
+  exact arrL_mem_pos h1
+
 #print axioms scanLoop_accepts
 #print axioms scanB_setup7
 #print axioms choiceSum_le
