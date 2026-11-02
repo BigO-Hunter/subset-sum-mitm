@@ -256,8 +256,10 @@ theorem scanLoop_accepts {w n : Nat} (ρ : Nat → BitVec w)
   | zero =>
     intro i jp f S r hbd1 hbd2 hb1 h1 h2 h6 h12 h13 h17 h19 h22 hilt hjp1 hjp
       hfit haddr hpair hsortedA hsortedB hfind hfuel hS
-    -- measure 0 contradicts i < 2^(n/2)
-    exfalso; omega
+    -- measure 0 contradicts i < 2^(n/2)  (absurd, NOT exfalso: exfalso
+    -- drags Classical.choice into the axioms)
+    have hcon : ¬ ((2 ^ (n / 2) - i) + jp ≤ 0) := by omega
+    exact absurd hfuel hcon
   | succ F ih =>
     intro i jp f S r hbd1 hbd2 hb1 h1 h2 h6 h12 h13 h17 h19 h22 hilt hjp1 hjp
       hfit haddr hpair hsortedA hsortedB ⟨i', hi'le, hi'lt, jp', hjp'1, hjp'le, hpairwit⟩
