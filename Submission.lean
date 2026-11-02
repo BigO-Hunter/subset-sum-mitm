@@ -1,5 +1,5 @@
-import Submission.Race
+import Submission.Prog2BigO
 
-/-- The submission target: subset-sum in O(2^(0.75n)). -/
-theorem Race.bound : BigOSpeedrun.SubsetSum.SolvedInTime (3 / 4 : Rat) :=
-  SubsetSum.MITM.Race_bound_reduced
+/-- The submission target: subset-sum in O(2^(1/2n)). -/
+theorem Race.bound : BigOSpeedrun.SubsetSum.SolvedInTime (1 / 2 : Rat) :=
+  SubsetSum.MITM.Race_bound'
