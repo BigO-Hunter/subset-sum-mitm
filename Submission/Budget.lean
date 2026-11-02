@@ -132,11 +132,63 @@ example : (3 : Nat) * 2 ^ (3 / 2) ≤ 2 ^ 3 := by decide
 example : (2 : Nat) * 2 ≤ 2 * 2 ^ 2 := by decide
 example : (3 : Nat) * 3 ≤ 2 * 2 ^ 3 := by decide
 
-#print axioms pow_fold
-#print axioms succ_le_pow
-#print axioms n_le_two_pow_ceil
-#print axioms n_mul_half_le
-#print axioms n_sq_le
-#print axioms budget_sq
+
+/-! ## M6: the composed budget over the four landed phase constants
+
+Landed budgets (all zero-sorry, on `v2-alpha-half`):
+- `phaseA_exec`  (PhaseA.lean):  `12 + 44 * (2^(n/2) - 1) + 24 * (n/2)`
+- `phaseA2_exec` (PhaseA2.lean): `17 + 44 * (2^(n - n/2) - 1) + 24 * (n - n/2)`
+- `canon_exec`   (Canon.lean):   `7 * 2^(n/2) + 9`
+- `scanB_budget` (ScanB.lean):   `30 * 2^(n/2) + 9`
+
+Sum ≤ `176 * 2^(n/2) + 64 * n` (the design `C=256, D=12` is exceeded on the
+linear term — three phases contribute `24n` of linear work plus the prologue
+beyond this compose — so `C`, `D` are re-derived upward, honestly).  With
+`T n = 176 * 2^(n/2) + 64 * n` the final constant is
+`K = C² + 2CD + 2D² = 61696`. -/
+
+/-- The four v2 phase budgets fold into `T n = 176 * 2^(n/2) + 64 * n`.
+The `2^(n - n/2)` terms fold onto `2^(n/2)` by monotonicity
+(`hpowm`); the `pow - 1` atoms are bounded by the un-split form
+BEFORE `omega` sees them (campaign craft note: `omega` atomizes
+`pow - pow` differences). -/
+theorem budget_compose2 {n : Nat} (hn : 4 ≤ n) :
+    (12 + 44 * (2 ^ (n / 2) - 1) + 24 * (n / 2))
+      + (17 + 44 * (2 ^ (n - n / 2) - 1) + 24 * (n - n / 2))
+      + (7 * 2 ^ (n / 2) + 9) + (30 * 2 ^ (n / 2) + 9)
+    ≤ 176 * 2 ^ (n / 2) + 64 * n := by
+  have hpow1 : (4:Nat) ≤ 2 ^ (n / 2) := by
+    have h2 : (2:Nat) ^ 2 ≤ 2 ^ (n / 2) := Nat.pow_le_pow_right (by omega) (by omega)
+    exact h2
+  have hpowm : 2 ^ (n - n / 2) ≤ 2 * 2 ^ (n / 2) := by
+    have hmh : n - n / 2 ≤ n / 2 + 1 := by omega
+    have h1 : 2 ^ (n - n / 2) ≤ 2 ^ (n / 2 + 1) :=
+      Nat.pow_le_pow_right (by omega) hmh
+    have h2 : 2 ^ (n / 2 + 1) = 2 * 2 ^ (n / 2) := by
+      rw [Nat.pow_succ]
+      omega
+    omega
+  have hA : 44 * (2 ^ (n / 2) - 1) ≤ 44 * 2 ^ (n / 2) :=
+    Nat.mul_le_mul (Nat.le_refl _) (Nat.sub_le _ _)
+  have hB : 44 * (2 ^ (n - n / 2) - 1) ≤ 44 * 2 ^ (n - n / 2) :=
+    Nat.mul_le_mul (Nat.le_refl _) (Nat.sub_le _ _)
+  have hC : 44 * 2 ^ (n - n / 2) + 30 * 2 ^ (n / 2) ≤ 118 * 2 ^ (n / 2) := by
+    have h44 : 44 * 2 ^ (n - n / 2) ≤ 88 * 2 ^ (n / 2) := by
+      have h := Nat.mul_le_mul (Nat.le_refl (44 : Nat)) hpowm
+      omega
+    omega
+  omega
+
+/-- The final squared shape: `T n ^ 2 ≤ 61696 * 2 ^ n` for `T n =
+176 * 2^(n/2) + 64 * n` — `budget_sq` with the composed constants;
+`K = 176² + 2·176·64 + 2·64² = 61696`. -/
+theorem budget_final {n : Nat} (hn : 4 ≤ n) :
+    (176 * 2 ^ (n / 2) + 64 * n) ^ 2 ≤ 61696 * 2 ^ n := by
+  have h := budget_sq 176 64 n (by omega)
+  rw [show ((176 * 176 + 2 * 176 * 64 + 2 * 64 * 64 : Nat)) = 61696 from by decide] at h
+  exact h
+
+#print axioms budget_compose2
+#print axioms budget_final
 
 end SubsetSum.MITM
