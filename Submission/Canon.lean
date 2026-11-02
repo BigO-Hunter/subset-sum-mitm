@@ -97,6 +97,7 @@ theorem canonLoop_exec {w n : Nat} (ρ : Nat → BitVec w)
       f' 14 = 2 ^ (n / 2) ∧ f' 21 = 2 ^ (n / 2) ∧ f' 16 = t0 ∧ f' 22 = t0 + 1 ∧
       f' 6 = bd1 ∧ f' 1 = 1 ∧ f' 2 = 0 ∧ f' 7 = n ∧ f' 8 = 2 * n + 23 ∧
       f' 9 = n / 2 ∧ f' 11 = 2 ^ (n - n / 2) ∧
+      f' 12 = f 12 ∧ f' 13 = f 13 ∧ f' 17 = f 17 ∧ f' 19 = f 19 ∧
       (∀ q, f' q < 2 ^ w) ∧
       (∀ q, q < 2 ^ (n / 2) → f' (bd1 + q) = clamp t0 (f0 (bd1 + q))) ∧
       Pres (ARegC n bd1) f0 f' := by
@@ -111,7 +112,7 @@ theorem canonLoop_exec {w n : Nat} (ρ : Nat → BitVec w)
     have hgeExit : ¬ f 14 < f 21 := by rw [h14, h21]; omega
     have hltJ : f 2 < f 1 := by rw [h2, h1]; omega
     refine ⟨2, f, by omega, ?_, h14, h21, h16, h22, h6, h1, h2,
-      h7, h8, h9, h11, hfit, hB, hpres⟩
+      h7, h8, h9, h11, rfl, rfl, rfl, rfl, hfit, hB, hpres⟩
     rw [exec_blt_ge_step (S := S) (by omega)
       (show prog2.getD 222 Instr.reject = Instr.blt 14 21 224 by rfl) hfit
       hgeExit,
@@ -202,7 +203,7 @@ theorem canonLoop_exec {w n : Nat} (ρ : Nat → BitVec w)
           simp only [Nat.sub_sub]
         -- recurse from the post-iteration state
         obtain ⟨c', f', hc', hex, h14', h21', h16', h22', h6', h1', h2', h7',
-          h8', h9', h11', hfit', hB', hpres'⟩ :=
+          h8', h9', h11', h12', h13', h17', h19', hfit', hB', hpres'⟩ :=
           ih (i + 1)
             (up (up (up (up f 20 (bd1 + i)) 15 (f0 (bd1 + i))) (bd1 + i)
               (t0 + 1)) 14 (i + 1)) (S - 7) r hbd1
@@ -276,7 +277,24 @@ theorem canonLoop_exec {w n : Nat} (ρ : Nat → BitVec w)
               (pres_up (c := 14) (show ARegC n bd1 14 from Or.inl (by omega)))))))
             (by omega) (by omega)
         refine ⟨7 + c', f', by omega, ?_, h14', h21', h16', h22', h6', h1',
-          h2', h7', h8', h9', h11', hfit', hB', hpres'⟩
+          h2', h7', h8', h9', h11',
+          (by rw [h12', up_ne (show (12:Nat) ≠ 14 by omega),
+              up_ne (show (12:Nat) ≠ (bd1:Nat) + i by omega),
+              up_ne (show (12:Nat) ≠ 15 by omega),
+              up_ne (show (12:Nat) ≠ 20 by omega)]),
+          (by rw [h13', up_ne (show (13:Nat) ≠ 14 by omega),
+              up_ne (show (13:Nat) ≠ (bd1:Nat) + i by omega),
+              up_ne (show (13:Nat) ≠ 15 by omega),
+              up_ne (show (13:Nat) ≠ 20 by omega)]),
+          (by rw [h17', up_ne (show (17:Nat) ≠ 14 by omega),
+              up_ne (show (17:Nat) ≠ (bd1:Nat) + i by omega),
+              up_ne (show (17:Nat) ≠ 15 by omega),
+              up_ne (show (17:Nat) ≠ 20 by omega)]),
+          (by rw [h19', up_ne (show (19:Nat) ≠ 14 by omega),
+              up_ne (show (19:Nat) ≠ (bd1:Nat) + i by omega),
+              up_ne (show (19:Nat) ≠ 15 by omega),
+              up_ne (show (19:Nat) ≠ 20 by omega)]),
+          hfit', hB', hpres'⟩
         rw [hbody, hex, show S - 7 - c' = S - (7 + c') from by omega]
       · -- keep path: 226 falls through to 227 (`jmp LCNN`), cell untouched
         have fit2 : ∀ q,
@@ -345,7 +363,7 @@ theorem canonLoop_exec {w n : Nat} (ρ : Nat → BitVec w)
               hlt230]
           simp only [Nat.sub_sub]
         obtain ⟨c', f', hc', hex, h14', h21', h16', h22', h6', h1', h2', h7',
-          h8', h9', h11', hfit', hB', hpres'⟩ :=
+          h8', h9', h11', h12', h13', h17', h19', hfit', hB', hpres'⟩ :=
           ih (i + 1)
             (up (up (up f 20 (bd1 + i)) 15 (f0 (bd1 + i))) 14 (i + 1)) (S - 7) r
             hbd1
@@ -407,7 +425,20 @@ theorem canonLoop_exec {w n : Nat} (ρ : Nat → BitVec w)
               (pres_up (c := 14) (show ARegC n bd1 14 from Or.inl (by omega))))))
             (by omega) (by omega)
         refine ⟨7 + c', f', by omega, ?_, h14', h21', h16', h22', h6', h1',
-          h2', h7', h8', h9', h11', hfit', hB', hpres'⟩
+          h2', h7', h8', h9', h11',
+          (by rw [h12', up_ne (show (12:Nat) ≠ 14 by omega),
+              up_ne (show (12:Nat) ≠ 15 by omega),
+              up_ne (show (12:Nat) ≠ 20 by omega)]),
+          (by rw [h13', up_ne (show (13:Nat) ≠ 14 by omega),
+              up_ne (show (13:Nat) ≠ 15 by omega),
+              up_ne (show (13:Nat) ≠ 20 by omega)]),
+          (by rw [h17', up_ne (show (17:Nat) ≠ 14 by omega),
+              up_ne (show (17:Nat) ≠ 15 by omega),
+              up_ne (show (17:Nat) ≠ 20 by omega)]),
+          (by rw [h19', up_ne (show (19:Nat) ≠ 14 by omega),
+              up_ne (show (19:Nat) ≠ 15 by omega),
+              up_ne (show (19:Nat) ≠ 20 by omega)]),
+          hfit', hB', hpres'⟩
         rw [hbody, hex, show S - 7 - c' = S - (7 + c') from by omega]
     · -- already done: exit branch (222 → 223 → 231), 2 steps
       have hiEq : i = 2 ^ (n / 2) := by omega
@@ -415,7 +446,7 @@ theorem canonLoop_exec {w n : Nat} (ρ : Nat → BitVec w)
       have hgeExit : ¬ f 14 < f 21 := by rw [h14, h21]; omega
       have hltJ : f 2 < f 1 := by rw [h2, h1]; omega
       refine ⟨2, f, by omega, ?_, h14, h21, h16, h22, h6, h1, h2,
-        h7, h8, h9, h11, hfit, hB, hpres⟩
+        h7, h8, h9, h11, rfl, rfl, rfl, rfl, hfit, hB, hpres⟩
       rw [exec_blt_ge_step (S := S) (by omega)
         (show prog2.getD 222 Instr.reject = Instr.blt 14 21 224 by rfl) hfit
         hgeExit,
@@ -430,7 +461,9 @@ theorem canonLoop_exec {w n : Nat} (ρ : Nat → BitVec w)
 first-half array at `bd1` in place and reaches `pcScanB` with the TRUE
 budget `7 * 2^(n/2) + 9`.  The write region is `ARegC n bd1`, so the
 relocated input block, the `t` cell and the second-half strip all
-survive for `scanB`. -/
+survive for `scanB`.  M7 pass-through pins: canon writes only registers
+{14,15,16,20,21,22} (plus the strip), so 12/13/17/19 flow through
+unchanged — register 19 carries `bd2` into the scanB entry. -/
 theorem canon_exec {w n : Nat} (ρ : Nat → BitVec w)
     (f0 : Nat → Nat) (bd1 t0 : Nat) (r S : Nat)
     (hbd1 : 22 < bd1)
@@ -448,6 +481,7 @@ theorem canon_exec {w n : Nat} (ρ : Nat → BitVec w)
       arrL f' bd1 (2 ^ (n / 2)) = (arrL f0 bd1 (2 ^ (n / 2))).map (clamp t0) ∧
       f' 6 = bd1 ∧ f' 1 = 1 ∧ f' 2 = 0 ∧ f' 7 = n ∧ f' 8 = 2 * n + 23 ∧
       f' 9 = n / 2 ∧ f' 11 = 2 ^ (n - n / 2) ∧
+      f' 12 = f0 12 ∧ f' 13 = f0 13 ∧ f' 17 = f0 17 ∧ f' 19 = f0 19 ∧
       (∀ q, f' q < 2 ^ w) ∧ Pres (ARegC n bd1) f0 f' := by
   have h0lt : (0:Nat) < 2 ^ w := Nat.one_le_two_pow (n := w)
   have hpcc : pcCanon = 215 := rfl
@@ -584,9 +618,35 @@ theorem canon_exec {w n : Nat} (ρ : Nat → BitVec w)
       (pres_trans (pres_up (c := 20) (show ARegC n bd1 20 from Or.inl (by omega)))
       (pres_trans (pres_up (c := 16) (show ARegC n bd1 16 from Or.inl (by omega)))
       (pres_up (c := 22) (show ARegC n bd1 22 from Or.inl (by omega))))))))
+  -- the setup writes only registers 14, 21, 21, 20, 20, 16, 22 — the M7
+  -- pass-through registers (12/13/17/19) enter the loop unchanged.
+  have G12 : (up (up (up (up (up (up (up f0 14 0) 21 1) 21 (2 ^ (n / 2)))
+        20 (3 * n + 23)) 20 (3 * n + 24)) 16 t0) 22 (t0 + 1)) 12 = f0 12 := by
+    rw [up_ne (show (12:Nat) ≠ 22 by omega), up_ne (show (12:Nat) ≠ 16 by omega),
+        up_ne (show (12:Nat) ≠ 20 by omega), up_ne (show (12:Nat) ≠ 20 by omega),
+        up_ne (show (12:Nat) ≠ 21 by omega), up_ne (show (12:Nat) ≠ 21 by omega),
+        up_ne (show (12:Nat) ≠ 14 by omega)]
+  have G13 : (up (up (up (up (up (up (up f0 14 0) 21 1) 21 (2 ^ (n / 2)))
+        20 (3 * n + 23)) 20 (3 * n + 24)) 16 t0) 22 (t0 + 1)) 13 = f0 13 := by
+    rw [up_ne (show (13:Nat) ≠ 22 by omega), up_ne (show (13:Nat) ≠ 16 by omega),
+        up_ne (show (13:Nat) ≠ 20 by omega), up_ne (show (13:Nat) ≠ 20 by omega),
+        up_ne (show (13:Nat) ≠ 21 by omega), up_ne (show (13:Nat) ≠ 21 by omega),
+        up_ne (show (13:Nat) ≠ 14 by omega)]
+  have G17 : (up (up (up (up (up (up (up f0 14 0) 21 1) 21 (2 ^ (n / 2)))
+        20 (3 * n + 23)) 20 (3 * n + 24)) 16 t0) 22 (t0 + 1)) 17 = f0 17 := by
+    rw [up_ne (show (17:Nat) ≠ 22 by omega), up_ne (show (17:Nat) ≠ 16 by omega),
+        up_ne (show (17:Nat) ≠ 20 by omega), up_ne (show (17:Nat) ≠ 20 by omega),
+        up_ne (show (17:Nat) ≠ 21 by omega), up_ne (show (17:Nat) ≠ 21 by omega),
+        up_ne (show (17:Nat) ≠ 14 by omega)]
+  have G19 : (up (up (up (up (up (up (up f0 14 0) 21 1) 21 (2 ^ (n / 2)))
+        20 (3 * n + 23)) 20 (3 * n + 24)) 16 t0) 22 (t0 + 1)) 19 = f0 19 := by
+    rw [up_ne (show (19:Nat) ≠ 22 by omega), up_ne (show (19:Nat) ≠ 16 by omega),
+        up_ne (show (19:Nat) ≠ 20 by omega), up_ne (show (19:Nat) ≠ 20 by omega),
+        up_ne (show (19:Nat) ≠ 21 by omega), up_ne (show (19:Nat) ≠ 21 by omega),
+        up_ne (show (19:Nat) ≠ 14 by omega)]
   -- the loop
   obtain ⟨cL, f', hcL, hexL, h14', h21', h16', h22', h6', h1', h2', h7', h8',
-    h9', h11', hfit', hB', hpres'⟩ :=
+    h9', h11', h12', h13', h17', h19', hfit', hB', hpres'⟩ :=
     canonLoop_exec ρ f0 bd1 t0 (2 ^ (n / 2)) 0
       (up (up (up (up (up (up (up f0 14 0) 21 1) 21 (2 ^ (n / 2)))
         20 (3 * n + 23)) 20 (3 * n + 24)) 16 t0) 22 (t0 + 1)) (S - 7) r
@@ -664,7 +724,8 @@ theorem canon_exec {w n : Nat} (ρ : Nat → BitVec w)
               up_ne (show (bd1:Nat) + q ≠ 14 by omega)])
       hpres7 (by omega) (by omega)
   refine ⟨7 + cL, f', by omega, ?_, ?_, h6', h1', h2', h7', h8', h9', h11',
-    hfit', hpres'⟩
+    by rw [h12']; exact G12, by rw [h13']; exact G13,
+    by rw [h17']; exact G17, by rw [h19']; exact G19, hfit', hpres'⟩
   · rw [hsetup, show (215 + 7) = 222 from rfl, hexL,
       show S - 7 - cL = S - (7 + cL) from by omega, hpcs]
   · rw [arrL_congr (g := fun c => clamp t0 (f0 c))

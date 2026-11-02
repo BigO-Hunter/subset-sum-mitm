@@ -1350,6 +1350,7 @@ theorem phaseA2_exec {w n : Nat} (ρ : Nat → BitVec w) {x : Instance n}
     ∃ c f' bd2, c ≤ 17 + 44 * (2 ^ (n - n / 2) - 1) + 24 * (n - n / 2) ∧
       exec prog2 ρ S 148 r (memOf w f0) = exec prog2 ρ (S - c) pcCanon r (memOf w f') ∧
       f' 10 = n + 1 ∧ f' 11 = 2 ^ (n - n / 2) ∧ f' 19 = bd2 ∧ f' 18 = bd2 ∧
+      (bd2 = BD2 n ∨ bd2 = BD2 n + 2 ^ (n - n / 2) + 1) ∧
       arrL f' bd2 (2 ^ (n - n / 2))
         = halfSums (fun i => instA x (n / 2 + i)) (n - n / 2) ∧
       f' 6 = bd1 ∧ f' 1 = 1 ∧ f' 2 = 0 ∧ f' 7 = n ∧ f' 8 = 2 * n + 23 ∧
@@ -1545,8 +1546,8 @@ theorem phaseA2_exec {w n : Nat} (ρ : Nat → BitVec w) {x : Instance n}
       (Or.inl ⟨rfl, rfl⟩) hrel1 hin (by rw [hf1def]; exact f16fit) haddr (by omega)
       (by rw [show (1:Nat) - 1 = 0 from rfl, Nat.pow_zero]; omega)
   rw [hf1def] at hf2pres
-  refine ⟨16 + c2, f', bd2, by omega, ?_, hf210, hf211, hf2bd, hf218, hf2arr,
-    ?_, hf21, hf22, hf27, hf28, ?_, hf2fit, pres_trans hpres1 hf2pres⟩
+  refine ⟨16 + c2, f', bd2, by omega, ?_, hf210, hf211, hf2bd, hf218, hf2disj,
+    hf2arr, ?_, hf21, hf22, hf27, hf28, ?_, hf2fit, pres_trans hpres1 hf2pres⟩
   · rw [hf1def] at hex2
     rw [hsetup, hex2]
     rw [show S - 16 - c2 = S - (16 + c2) from by omega]
