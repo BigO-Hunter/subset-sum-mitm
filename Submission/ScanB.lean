@@ -62,6 +62,60 @@ private theorem setup7_ne (f : Nat → Nat) (v12 v13 v20a v20b v17 v22a v22b q :
     up_ne (show q ≠ 20 by omega), up_ne (show q ≠ 13 by omega),
     up_ne (show q ≠ 12 by omega)]
 
+/-! ## §0b. The no-wrap envelope (M7b) -/
+
+/-- **No-wrap envelope for the scan sweep.**  A clamped first-half entry
+(`≤ t₀ + 1`, canon's clamp) plus a second-half entry (`≤ n·maxValue`,
+every subset sum of at most `n` positive inputs) is below `2^w`:
+`t₀ ≤ maxValue < 2^bits` and `w = 4(n+bits) + ⌈log₂(n+2)⁴⌉ + 1 ≥
+bits + log₂n + 2` give `(t₀+1) + n·maxValue + 1 < 2^(bits+log₂n+2) ≤ 2^w`.
+Minimal context by design (no memory, no program, no arrays — the
+omega-bogus-counterexample cure): only `x`, `n ≥ 2` and three value
+bounds.  Note the honest scope: `t₀` may exceed `Σa`, so the sharper
+`2·Σa < 2^w` route of `two_sum_lt_pow_wordLength` does NOT apply; the
+`maxValue`-roof does. -/
+theorem pair_sum_lt_two_pow {n : Nat} (x : Instance n) (hn : 2 ≤ n) (w : Nat)
+    (hw : wordLength n x.bits ≤ w)
+    (vA vB t0 : Nat) (hvA : vA ≤ t0 + 1) (hvB : vB ≤ n * x.maxValue)
+    (ht0 : t0 ≤ x.maxValue) :
+    vA + vB < 2 ^ w := by
+  have hpos : 0 < n := by omega
+  have hmax : x.maxValue < 2 ^ x.bits := maxValue_lt_pow x hpos
+  have hwdef : wordLength n x.bits
+      = 4 * (n + x.bits) + Nat.log2 ((n + 2) ^ 4 - 1) + 1 := rfl
+  have hlogn : Nat.log2 n ≤ n := Nat.log2_le_self n
+  have hexp : x.bits + Nat.log2 n + 2 ≤ w := by omega
+  have hnl : n + 1 ≤ 2 ^ (Nat.log2 n + 1) := by
+    have h := log2_lt hpos
+    omega
+  have hpow2 : 2 ≤ 2 ^ (Nat.log2 n + 1) := by
+    have h1 : 2 ^ 1 ≤ 2 ^ (Nat.log2 n + 1) :=
+      Nat.pow_le_pow_right (by omega) (by omega)
+    rwa [Nat.pow_one] at h1
+  -- bridge the two product atoms (omega atomizes (n+1)·m vs n·m)
+  have hsplit : (n + 1) * x.maxValue = n * x.maxValue + x.maxValue := by
+    rw [Nat.add_mul, Nat.one_mul]
+  have p1 : vA + vB ≤ (n + 1) * x.maxValue + 1 := by omega
+  have p2 : (n + 1) * x.maxValue + 1
+      < 2 ^ (Nat.log2 n + 1) * 2 ^ x.bits := by
+    have e1 : (n + 1) * x.maxValue ≤ 2 ^ (Nat.log2 n + 1) * x.maxValue :=
+      Nat.mul_le_mul_right x.maxValue hnl
+    have hmax1 : x.maxValue + 1 ≤ 2 ^ x.bits := by omega
+    have e4 : 2 ^ (Nat.log2 n + 1) * x.maxValue + 2 ^ (Nat.log2 n + 1)
+        ≤ 2 ^ (Nat.log2 n + 1) * 2 ^ x.bits := by
+      have h := Nat.mul_le_mul_left (2 ^ (Nat.log2 n + 1)) hmax1
+      rw [Nat.mul_add, Nat.mul_one] at h
+      exact h
+    -- the gap: maxValue+1 ≤ 2^bits shaves 2^(log2 n+1) ≥ 2 off the roof
+    omega
+  have p3 : vA + vB < 2 ^ (Nat.log2 n + 1) * 2 ^ x.bits := by omega
+  -- the fold: named-have exponents (Nat.pow_le_pow_right mis-elaborates
+  -- on a meta-typed second argument)
+  have q2 : 2 ^ (Nat.log2 n + 1) * 2 ^ x.bits ≤ 2 ^ w := by
+    rw [← Nat.pow_add]
+    exact Nat.pow_le_pow_right (by omega) (by omega)
+  exact Nat.lt_of_lt_of_le p3 q2
+
 /-! ## §1. The loop (pcs 238 → 238; ≤ 10 steps per iteration, ≤ 2 to exit) -/
 
 /-- Fuel-driven walk of scanB's loop: entered at `LSB` (pc 238) with `i`
