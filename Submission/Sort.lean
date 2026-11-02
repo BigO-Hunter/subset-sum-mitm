@@ -221,4 +221,96 @@ theorem mem_halfSums (a : Nat → Nat) (k x : Nat) :
     rw [halfSums, mem_mmerge, List.mem_map, isSum_succ]
     simp only [ih]
 
+/-! ## halfSums facts evacuated from PhaseB (v2 S1)
+
+`PhaseB.lean` is doomed in v2 (binary search is the poly source), but the
+facts below are consumed by the v2 second-half pipeline (scanB needs
+`halfSums_head_zero` as the reject-at-j=0 foundation).  They moved here
+verbatim so they survive PhaseB's deletion. -/
+
+/-- `mid = (lo + hi) / 2` sits inside `[lo, hi]` (via `div_add_mod`). -/
+theorem div2_bounds {lo hi : Nat} (h : lo ≤ hi) :
+    lo ≤ (lo + hi) / 2 ∧ (lo + hi) / 2 ≤ hi := by
+  have hd := Nat.div_add_mod (lo + hi) 2
+  have hm := Nat.mod_lt (lo + hi) (show 0 < 2 by decide)
+  omega
+
+/-- Both division bounds on `a / 2` without a side condition: the halves
+of a search window shrink by (at least) a factor of two per probe. -/
+theorem div2_mul_bounds (a : Nat) : 2 * (a / 2) ≤ a ∧ a ≤ 2 * (a / 2) + 1 := by
+  have hd := Nat.div_add_mod a 2
+  have hm := Nat.mod_lt a (show 0 < 2 by decide)
+  omega
+
+/-- Peeling the LAST cell of a range map-sum (PhaseA owns the name). -/
+theorem sumRangeSuccB (a : Nat → Nat) (k : Nat) :
+    ((List.range (k + 1)).map a).sum = ((List.range k).map a).sum + a k := by
+  rw [List.range_succ, List.map_append, List.map_singleton, List.sum_append,
+    List.sum_singleton]
+
+/-- A range sum splits at `h`: the first `h` cells plus the shifted rest. -/
+theorem sum_split_shift (a : Nat → Nat) (k h : Nat) :
+    ((List.range (h + k)).map a).sum
+      = ((List.range h).map a).sum
+        + ((List.range k).map (fun i => a (h + i))).sum := by
+  induction k with
+  | zero => simp
+  | succ k ih =>
+    rw [show h + (k + 1) = (h + k) + 1 from by omega,
+      sumRangeSuccB a (h + k), ih, sumRangeSuccB (fun i => a (h + i)) k]
+    omega
+
+/-- Range sums are monotone in the range. -/
+theorem range_sum_mono (a : Nat → Nat) (k n : Nat) (h : k ≤ n) :
+    ((List.range k).map a).sum ≤ ((List.range n).map a).sum := by
+  obtain ⟨m, rfl⟩ : ∃ m, n = k + m := ⟨n - k, by omega⟩
+  rw [sum_split_shift a m k]
+  omega
+
+/-- The smallest subset sum is 0: the doubling merge never loses the head. -/
+theorem halfSums_cons_zero (a : Nat → Nat) (k : Nat) :
+    ∃ t, halfSums a k = 0 :: t := by
+  induction k with
+  | zero => exact ⟨[], rfl⟩
+  | succ k ih =>
+    obtain ⟨t, ht⟩ := ih
+    rw [halfSums, ht, List.map_cons, mmerge,
+      if_neg (show ¬ (0 + a k < 0) by omega)]
+    exact ⟨_, rfl⟩
+
+theorem halfSums_head_zero (a : Nat → Nat) (k : Nat) : (halfSums a k).getD 0 0 = 0 := by
+  obtain ⟨t, ht⟩ := halfSums_cons_zero a k
+  rw [ht]; rfl
+
+/-- Every half-sum of the first `k` values sits under their total
+(PhaseB-local twin of PhaseA's `halfSumsLe`). -/
+theorem halfSums_le (a : Nat → Nat) : ∀ (k v : Nat), v ∈ halfSums a k →
+    v ≤ ((List.range k).map a).sum := by
+  intro k
+  induction k with
+  | zero =>
+    intro v hv
+    rw [halfSums] at hv
+    simp at hv
+    subst hv
+    simp
+  | succ k ih =>
+    intro v hv
+    rw [halfSums, mem_mmerge] at hv
+    rcases hv with h | h
+    · have h1 := ih v h
+      rw [sumRangeSuccB a k]
+      omega
+    · rw [List.mem_map] at h
+      obtain ⟨y, hy, hyv⟩ := h
+      have h1 := ih y hy
+      rw [sumRangeSuccB a k]
+      omega
+
+/-- Every half-sum of the first `k` values sits under the full-range total
+whenever `k ≤ n`. -/
+theorem halfSums_le_total {a : Nat → Nat} {k n : Nat} (hkn : k ≤ n) (v : Nat)
+    (hv : v ∈ halfSums a k) : v ≤ ((List.range n).map a).sum :=
+  Nat.le_trans (halfSums_le a k v hv) (range_sum_mono a k n hkn)
+
 end SubsetSum.MITM
