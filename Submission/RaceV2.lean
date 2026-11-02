@@ -650,7 +650,9 @@ theorem scanB_setup7 {w n : Nat} (ρ : Nat → BitVec w)
       exec prog2 ρ S 231 r (memOf w f) = exec prog2 ρ (S - 7) 238 r (memOf w g) ∧
       g 1 = 1 ∧ g 2 = 0 ∧ g 6 = bd1 ∧ g 12 = 0 ∧
       g 13 = bd2 + 2 ^ (n - n / 2) ∧ g 17 = t0 ∧ g 19 = bd2 ∧
-      g 22 = 2 ^ (n / 2) ∧ g (3 * n + 24) = t0 ∧
+      g 22 = 2 ^ (n / 2) ∧ g (3 * n + 24) = t0 ∧ g 7 = n ∧ g 8 = 2 * n + 23 ∧
+      g 9 = n / 2 ∧ g 11 = 2 ^ (n - n / 2) ∧
+      (∀ q, 22 < q → g q = f q) ∧
       (∀ q, g q < 2 ^ w) ∧
       (∀ c, c ≤ bd2 + 2 ^ (n - n / 2) → c < 2 ^ w) := by
   have hBD : BD2 n = 3 * n + 25 + 2 * 2 ^ (n / 2) + 2 := rfl
@@ -826,7 +828,8 @@ theorem scanB_setup7 {w n : Nat} (ρ : Nat → BitVec w)
       = exec prog2 ρ (S - 7) 238 r (memOf w G7) := by
     rw [e231, n231, e232, n232, e233, n233, e234, n234, e235, n235, e236,
       n236, e237, n237, ← hG7def]
-  refine ⟨G7, hsetup, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨G7, hsetup, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+    ?_, ?_⟩
   · rw [hG7def, up_ne (show (1:Nat) ≠ 22 by omega),
       up_ne (show (1:Nat) ≠ 22 by omega),
       up_ne (show (1:Nat) ≠ 17 by omega),
@@ -876,8 +879,47 @@ theorem scanB_setup7 {w n : Nat} (ρ : Nat → BitVec w)
       up_ne (show (3 * n + 24 : Nat) ≠ 20 by omega),
       up_ne (show (3 * n + 24 : Nat) ≠ 13 by omega),
       up_ne (show (3 * n + 24 : Nat) ≠ 12 by omega), ht0]
+  · rw [hG7def, up_ne (show (7:Nat) ≠ 22 by omega),
+      up_ne (show (7:Nat) ≠ 22 by omega),
+      up_ne (show (7:Nat) ≠ 17 by omega),
+      up_ne (show (7:Nat) ≠ 20 by omega),
+      up_ne (show (7:Nat) ≠ 20 by omega),
+      up_ne (show (7:Nat) ≠ 13 by omega),
+      up_ne (show (7:Nat) ≠ 12 by omega), h7]
+  · rw [hG7def, up_ne (show (8:Nat) ≠ 22 by omega),
+      up_ne (show (8:Nat) ≠ 22 by omega),
+      up_ne (show (8:Nat) ≠ 17 by omega),
+      up_ne (show (8:Nat) ≠ 20 by omega),
+      up_ne (show (8:Nat) ≠ 20 by omega),
+      up_ne (show (8:Nat) ≠ 13 by omega),
+      up_ne (show (8:Nat) ≠ 12 by omega), h8]
+  · rw [hG7def, up_ne (show (9:Nat) ≠ 22 by omega),
+      up_ne (show (9:Nat) ≠ 22 by omega),
+      up_ne (show (9:Nat) ≠ 17 by omega),
+      up_ne (show (9:Nat) ≠ 20 by omega),
+      up_ne (show (9:Nat) ≠ 20 by omega),
+      up_ne (show (9:Nat) ≠ 13 by omega),
+      up_ne (show (9:Nat) ≠ 12 by omega), h9]
+  · rw [hG7def, up_ne (show (11:Nat) ≠ 22 by omega),
+      up_ne (show (11:Nat) ≠ 22 by omega),
+      up_ne (show (11:Nat) ≠ 17 by omega),
+      up_ne (show (11:Nat) ≠ 20 by omega),
+      up_ne (show (11:Nat) ≠ 20 by omega),
+      up_ne (show (11:Nat) ≠ 13 by omega),
+      up_ne (show (11:Nat) ≠ 12 by omega), h11]
+  · intro q hq
+    rw [hG7def, up_ne (show q ≠ 22 by omega),
+      up_ne (show q ≠ 22 by omega),
+      up_ne (show q ≠ 17 by omega),
+      up_ne (show q ≠ 20 by omega),
+      up_ne (show q ≠ 20 by omega),
+      up_ne (show q ≠ 13 by omega),
+      up_ne (show q ≠ 12 by omega)]
   · intro q
-    exact fit7 q
+    have hq := fit7 q
+    rw [hG7def] at hq
+    rw [hG7def]
+    exact hq
   · intro c hc
     have hbe : bd2 ≤ BD2 n + 2 * 2 ^ (n - n / 2) + 1 := by have := hb2; omega
     by_cases h12c : c = 12
@@ -897,6 +939,24 @@ theorem scanB_setup7 {w n : Nat} (ρ : Nat → BitVec w)
       exact Nat.lt_of_le_of_lt (by omega) (haddr _ hbe)
     · exact haddr c (Nat.le_trans hc hb2)
 
+
+@[simp] theorem arrL_length {f : Nat → Nat} {b L : Nat} :
+    (arrL f b L).length = L := by
+  unfold arrL; simp
+
+/-- Value at index: `arrL` is the range-map of the cell reads. -/
+theorem arrL_val {f : Nat → Nat} {b L q : Nat} (hq : q < L) :
+    (arrL f b L)[q]? = some (f (b + q)) := by
+  unfold arrL arrAt
+  rw [List.getElem?_map, List.getElem?_range]
+  all_goals simp [hq]
+
+/-- `instA` at an in-bounds index is the Fin-array read (the dite does not
+reduce under `exact`'s defeq when the instance is stuck). -/
+theorem instA_in_lt {n : Nat} (x : Instance n) {i : Nat} (hi : i < n) :
+    instA x i = x.a ⟨i, hi⟩ := by
+  simp only [instA]
+  exact dif_pos hi
 
 /-! ### §C2. THE from-148 discharge
 
@@ -921,41 +981,31 @@ theorem clamp_le_succ (t0 v : Nat) : clamp t0 v ≤ t0 + 1 := by
   unfold clamp
   split <;> omega
 
-/-- Soundness of a sweep witness: the raw first-half sum (the cell value
-under canon's clamp) plus a second-half sum equals `t₀` iff the subset-sum
-decomposition holds. -/
-theorem isSum_of_witness {n : Nat} {x : Instance n}
-    {bd1 bd2 : Nat} {f' : Nat → Nat} {i jp : Nat} {t0 : Nat}
-    (hwit : f' (bd1 + i) + f' (bd2 + (jp - 1)) = t0)
-    (hi : i < 2 ^ (n / 2)) (hjp : jp - 1 < 2 ^ (n - n / 2))
-    (hA : arrL f' bd1 (2 ^ (n / 2)) = halfSums (instA x) (n / 2))
-    (hB : arrL f' bd2 (2 ^ (n - n / 2))
-      = halfSums (fun i => instA x (n / 2 + i)) (n - n / 2)) :
+/-- Soundness of a sweep witness (membership form): a first-half sum `v`
+plus a second-half sum `s` equal to `t₀` gives the subset-sum
+decomposition.  Canon's clamp is undone at the call site via
+`canon_pair_iff`. -/
+theorem isSum_of_witness {n : Nat} {x : Instance n} {t0 : Nat}
+    {v s : Nat}
+    (hwit : v + s = t0)
+    (hmemA : v ∈ halfSums (instA x) (n / 2))
+    (hmemB : s ∈ halfSums (fun i => instA x (n / 2 + i)) (n - n / 2)) :
     isSum (instA x) n t0 := by
-  have hmemA : f' (bd1 + i) ∈ halfSums (instA x) (n / 2) := by
-    have h1 := arrL_mem (f := f') (b := bd1) (L := 2 ^ (n / 2)) hi
-    rw [hA] at h1
-    exact h1
-  have hmemB : f' (bd2 + (jp - 1))
-      ∈ halfSums (fun i => instA x (n / 2 + i)) (n - n / 2) := by
-    have h1 := arrL_mem (f := f') (b := bd2) (L := 2 ^ (n - n / 2)) hjp
-    rw [hB] at h1
-    exact h1
-  have hisA : isSum (instA x) (n / 2) (f' (bd1 + i)) :=
+  have hisA : isSum (instA x) (n / 2) v :=
     (mem_halfSums _ _ _).mp hmemA
-  have hisB : isSum (fun i => instA x (n / 2 + i)) (n - n / 2)
-      (f' (bd2 + (jp - 1))) := (mem_halfSums _ _ _).mp hmemB
-  have hv : f' (bd1 + i) ≤ t0 := by omega
+  have hisB : isSum (fun i => instA x (n / 2 + i)) (n - n / 2) s :=
+    (mem_halfSums _ _ _).mp hmemB
+  have hv : v ≤ t0 := by omega
   have hisB' : isSum (fun i => instA x (i + n / 2)) (n - n / 2)
-      (t0 - f' (bd1 + i)) := by
-    rw [show t0 - f' (bd1 + i) = f' (bd2 + (jp - 1)) from by omega]
+      (t0 - v) := by
+    rw [show t0 - v = s from by omega]
     have hcomm : (fun i => instA x (i + n / 2))
         = (fun i => instA x (n / 2 + i)) := by
       funext i; rw [Nat.add_comm]
     rw [hcomm]
     exact hisB
   have hfinal := (isSum_split (instA x) (n / 2) (n - n / 2) t0).mpr
-    ⟨f' (bd1 + i), hv, hisA, hisB'⟩
+    ⟨v, hv, hisA, hisB'⟩
   have hnn : n / 2 + (n - n / 2) = n := by omega
   rw [hnn] at hfinal
   exact hfinal
@@ -983,8 +1033,320 @@ theorem exists_B_pos {n : Nat} {x : Instance n} {bd2 : Nat} {f' : Nat → Nat}
   have h1 : s ∈ arrL f' bd2 (2 ^ (n - n / 2)) := by rw [hB]; exact hmem
   exact arrL_mem_pos h1
 
+
+open scoped Classical in
+/-- THE from-148 discharge: from the phaseA-exit contract (the shape
+`phaseA_exec` concludes) the v2 program computes the EXACT membership
+verdict.  Soundness: a sweep witness transports through canon's clamp
+(`canon_pair_iff`) and both half-array memberships (`mem_halfSums`) to the
+subset-sum decomposition.  Completeness: the decomposition positions both
+half-sums inside the sweep's unexplored window, so `scanLoop_accepts`
+forces ACCEPT. -/
+theorem bign_run2_from148 {w n : Nat} (ρ : Nat → BitVec w) {x : Instance n}
+    (hn : 4 ≤ n) (hw : wordLength n x.bits ≤ w)
+    (f0 : Nat → Nat) (bd1 t0 : Nat) (r S : Nat)
+    (hfit : ∀ q, f0 q < 2 ^ w)
+    (h1 : f0 1 = 1) (h2 : f0 2 = 0) (h7 : f0 7 = n) (h8 : f0 8 = 2 * n + 23)
+    (h9 : f0 9 = n / 2) (h10 : f0 10 = n / 2 + 1)
+    (h18 : f0 18 = bd1) (h6 : f0 6 = bd1)
+    (hb1 : bd1 = 3 * n + 25 ∨ bd1 = 3 * n + 25 + 2 ^ (n / 2) + 1)
+    (harr : arrL f0 bd1 (2 ^ (n / 2)) = halfSums (instA x) (n / 2))
+    (ht0 : f0 (3 * n + 24) = t0) (ht0v : t0 = x.t)
+    (haddr : ∀ c, c ≤ BD2 n + 2 * 2 ^ (n - n / 2) + 1 → c < 2 ^ w)
+    (hrel : ∀ i, 1 ≤ i → i ≤ n → f0 (2 * n + 23 + i) = instA x (i - 1))
+    (hin : ∀ i, i < n → instA x i < 2 ^ w)
+    (hS : 176 * 2 ^ (n / 2) + 64 * n ≤ S) :
+    exec prog2 ρ S 148 r (memOf w f0) = some (decide (isSum (instA x) n x.t)) := by
+  have hBD : BD2 n = 3 * n + 25 + 2 * 2 ^ (n / 2) + 2 := rfl
+  have h0lt : (0:Nat) < 2 ^ w := Nat.one_le_two_pow (n := w)
+  have hw1 : 1 ≤ w := by
+    have hw' := hw
+    unfold wordLength at hw'
+    have : 0 ≤ Nat.log2 ((n + 2) ^ 4 - 1) := Nat.zero_le _
+    omega
+  have hpownnz : 0 ≤ 2 ^ (n / 2) - 1 := by
+    have := Nat.one_le_two_pow (n := n / 2)
+    omega
+  have hpownnz2 : 0 ≤ 2 ^ (n - n / 2) - 1 := by
+    have := Nat.one_le_two_pow (n := n - n / 2)
+    omega
+  have hpow2 : 2 ^ (n - n / 2) ≤ 2 * 2 ^ (n / 2) := by
+    have h1 : 2 ^ (n - n / 2) ≤ 2 ^ (n / 2 + 1) :=
+      Nat.pow_le_pow_right (by omega) (by omega)
+    rw [Nat.pow_succ] at h1
+    omega
+  have hbits : x.bits < w := by
+    have hw' := hw
+    unfold wordLength at hw'
+    have h1 : x.bits ≤ 4 * (n + x.bits) := by omega
+    have h2 : 0 ≤ Nat.log2 ((n + 2) ^ 4 - 1) := Nat.zero_le _
+    omega
+  have hmax : x.maxValue < 2 ^ x.bits := maxValue_lt_pow x (by omega)
+  have ht0le : t0 ≤ x.maxValue := ht0v ▸ maxValue_ge_t x
+  have ht0lt : t0 < 2 ^ x.bits := Nat.lt_of_le_of_lt ht0le hmax
+  have ht0fit : t0 + 1 < 2 ^ w := by
+    have h1 : t0 + 1 ≤ 2 ^ x.bits := by omega
+    have h2 : 2 ^ x.bits < 2 ^ w :=
+      Nat.pow_lt_pow_right (by omega) hbits
+    omega
+  -- phase A2: 148 -> 215
+  obtain ⟨c₂, f', bd2, hc₂, hex₂, hf'10, hf'11, hf'19, hf'18, hbd2disj,
+    hf'arr, hf'6, hf'1, hf'2, hf'7, hf'8, hf'9, hf'fit, hf'pres⟩ :=
+    phaseA2_exec ρ hn hw f0 r S hfit h1 h2 h7 h8 h9 h10 h18 hb1 harr haddr
+      hrel hin (by omega)
+  -- the t-cell carries through phaseA2 (3n+24 outside AReg2), and the
+  -- budget fold ties the three phase fuels to T = 176*2^(n/2)+64n
+  have hpresT : f' (3 * n + 24) = t0 := by
+    have hnA : ¬ AReg2 n (3 * n + 24) := by
+      intro hA
+      rcases hA with hA | ⟨hA, _⟩ <;> omega
+    rw [hf'pres _ hnA]
+    exact ht0
+  have hbc := budget_compose2 (n := n) hn
+  have hBnn1 : 0 ≤ 12 + 44 * (2 ^ (n / 2) - 1) + 24 * (n / 2) := by
+    have := Nat.one_le_two_pow (n := n / 2)
+    omega
+  have hBnn2 : 0 ≤ 44 * (2 ^ (n - n / 2) - 1) := by
+    have := Nat.one_le_two_pow (n := n - n / 2)
+    omega
+  -- canon: 215 -> 231 (clamps the first half in place; M7 pass-throughs)
+  obtain ⟨c₃, f'', hc₃, hex₃, hf''arr, hf''6, hf''1, hf''2, hf''7, hf''8,
+    hf''9, hf''11, hf''12, hf''13, hf''17, hf''19, hf''fit, hf''pres⟩ :=
+    canon_exec ρ f' bd1 t0 r (S - c₂)
+      (by rcases hb1 with rfl | rfl <;> omega)
+      (by have := hb1; omega)
+      hf'fit hw1 hf'1 hf'2 hf'7 hf'8 hf'9 hf'6 hf'11
+      (by have hnA : ¬ AReg2 n (3 * n + 24) := by
+            intro hA
+            rcases hA with hA | ⟨hA, _⟩ <;> omega
+          rw [hf'pres _ hnA]
+          exact ht0)
+      ht0fit haddr (by omega)
+  have hpresT'' : f'' (3 * n + 24) = t0 := by
+    have hnA : ¬ ARegC n bd1 (3 * n + 24) := by
+      intro hA
+      rcases hA with hA | ⟨hA, _⟩ <;> omega
+    rw [hf''pres _ hnA]
+    exact hpresT
+  -- the pre-canon A-array (A-cells sit outside AReg2 for n ≥ 4, so Pres
+  -- transports `harr` from f0 to f'): hsortedA's sortedness source
+  have hf'arrA : arrL f' bd1 (2 ^ (n / 2)) = halfSums (instA x) (n / 2) := by
+    have hpre : ∀ q, q < 2 ^ (n / 2) → f' (bd1 + q) = f0 (bd1 + q) := by
+      intro q hq
+      have hnA : ¬ AReg2 n (bd1 + q) := by
+        intro hA
+        rcases hA with hA | ⟨hA, _⟩ <;>
+          rcases hb1 with rfl | rfl <;> omega
+      exact hf'pres _ hnA
+    have he : arrL f' bd1 (2 ^ (n / 2))
+        = (List.range (2 ^ (n / 2))).map (fun q => f0 (bd1 + q)) := by
+      rw [show arrL f' bd1 (2 ^ (n / 2))
+          = (List.range (2 ^ (n / 2))).map (fun q => f' (bd1 + q)) from rfl]
+      exact List.map_congr_left fun q hq => hpre q (List.mem_range.mp hq)
+    rw [he, show (List.range (2 ^ (n / 2))).map (fun q => f0 (bd1 + q))
+        = arrL f0 bd1 (2 ^ (n / 2)) from rfl, harr]
+  -- fuel facts from budget_compose2's fold (isolated so the (by omega)s
+  -- below see a small context)
+  have hfuelA : 7 * 2 ^ (n / 2) + 9 ≤ S - c₂ := by omega
+  have hfuel : 10 * (2 ^ (n / 2) + 2 ^ (n - n / 2)) + 9 ≤ S - c₂ - c₃ := by
+    omega
+  -- canon exports 19 in preservation form; setup7/scanB_exec want the pin
+  have hf''19bd2 : f'' 19 = bd2 := by
+    rw [hf''19]
+    exact hf'19
+  -- scanB envelope facts
+  have hbd2lt : 22 < bd2 := by
+    rcases hbd2disj with rfl | rfl <;>
+      rw [hBD] <;>
+      have h4 : (2:Nat) ^ 2 ≤ 2 ^ (n / 2) :=
+        Nat.pow_le_pow_right (by omega) (by omega) <;> omega
+  have hb1' : bd1 + 2 ^ (n / 2) ≤ bd2 + 2 ^ (n - n / 2) := by
+    rcases hb1 with rfl | rfl
+    · rcases hbd2disj with rfl | rfl <;> omega
+    · rcases hbd2disj with rfl | rfl <;> omega
+  have hb2' : bd2 + 2 ^ (n - n / 2) ≤ BD2 n + 2 * 2 ^ (n - n / 2) + 1 := by
+    rcases hbd2disj with rfl | rfl <;> omega
+  -- the pair envelope on the canon-exit state
+  have hpresAB : ∀ q, q < 2 ^ (n / 2) →
+      f'' (bd1 + q) = clamp t0 (f' (bd1 + q)) := by
+    intro q hq
+    have h1 : (arrL f'' bd1 (2 ^ (n / 2)))[q]? = some (f'' (bd1 + q)) :=
+      arrL_val hq
+    rw [hf''arr, List.getElem?_map, arrL_val hq] at h1
+    simpa using h1.symm
+  have hpresB : ∀ q, q < 2 ^ (n - n / 2) → f'' (bd2 + q) = f' (bd2 + q) := by
+    intro q hq
+    have hnA : ¬ ARegC n bd1 (bd2 + q) := by
+      intro hA
+      rcases hA with hA | ⟨hA, _⟩ <;> omega
+    rw [hf''pres _ hnA]
+  have hpair'' : ∀ q, q < 2 ^ (n / 2) → ∀ q', q' < 2 ^ (n - n / 2) →
+      f'' (bd1 + q) + f'' (bd2 + q') < 2 ^ w := by
+    intro q hq q' hq'
+    have hvA := clamp_le_succ t0 (f' (bd1 + q))
+    rw [← hpresAB q hq] at hvA
+    have hmem : f' (bd2 + q') ∈ halfSums (fun i => instA x (n / 2 + i))
+        (n - n / 2) := by
+      have h1 := arrL_mem (f := f') (b := bd2) (L := 2 ^ (n - n / 2)) hq'
+      rw [hf'arr] at h1
+      exact h1
+    have hisB := (mem_halfSums _ _ _).mp hmem
+    obtain ⟨S, hSn, hsum⟩ := hisB
+    have hbound : choiceSum (fun i => instA x (n / 2 + i)) S (n - n / 2)
+        ≤ (n - n / 2) * x.maxValue :=
+      choiceSum_le (fun i hi => by
+        by_cases hSi : S i = true
+        · rw [if_pos hSi]
+          rw [instA_in_lt x (by omega)]
+          exact maxValue_ge_a x ⟨n / 2 + i, by omega⟩
+        · rw [if_neg hSi]
+          omega)
+    -- the maxValue roof: keep the product terms syntactic (omega cannot
+    -- relate (n-n/2)·mV to n·mV — atomized via the add_mul split)
+    have hvB : f' (bd2 + q') ≤ n * x.maxValue := by
+      have hbound2 : f' (bd2 + q') ≤ (n - n / 2) * x.maxValue := by
+        rw [← hsum]
+        exact hbound
+      have hsplit : n * x.maxValue
+          = (n / 2) * x.maxValue + (n - n / 2) * x.maxValue := by
+        rw [← Nat.add_mul]
+        congr 1
+        omega
+      rw [hsplit]
+      exact Nat.le_trans hbound2 (Nat.le_add_left _ _)
+    rw [hpresB q' hq']
+    exact pair_sum_lt_two_pow x (by omega) w hw (f'' (bd1 + q))
+      (f' (bd2 + q')) t0 hvA hvB ht0le
+  -- the sweep, entered at (0, 2^(n-n/2))
+  obtain ⟨g, hsetup, hg1, hg2, hg6, hg12, hg13, hg17, hg19, hg22,
+    hgT, hg7, hg8, hg9, hg11, hgcellpres, hgfit, hgaddr⟩ :=
+    scanB_setup7 ρ bd1 bd2 t0 f'' r (S - c₂ - c₃) hbd2lt hf''1 hf''2 hf''6
+      hf''7 hf''8 hf''9 hf''11 hf''19bd2 hpresT'' hf''fit hb2' haddr
+      (by omega)
+  -- sortedness of both arrays on the loop-entry state
+  have hcellpres : ∀ q, 22 < q → g q = f'' q := hgcellpres
+  have hpresB'arr : arrL f'' bd2 (2 ^ (n - n / 2))
+      = halfSums (fun i => instA x (n / 2 + i)) (n - n / 2) := by
+    rw [show arrL f'' bd2 (2 ^ (n - n / 2))
+        = (List.range (2 ^ (n - n / 2))).map (fun q => f'' (bd2 + q)) from rfl,
+      List.map_congr_left (fun q hq => hpresB q (List.mem_range.mp hq)),
+      show (List.range (2 ^ (n - n / 2))).map (fun q => f' (bd2 + q))
+        = arrL f' bd2 (2 ^ (n - n / 2)) from rfl,
+      hf'arr]
+  have hsortedA : ∀ q q', q ≤ q' → q' < 2 ^ (n / 2) →
+      g (bd1 + q) ≤ g (bd1 + q') := by
+    intro q q' hle hlt
+    have hP : List.Pairwise (· ≤ ·)
+        ((List.range (2 ^ (n / 2))).map (fun q => f'' (bd1 + q))) := by
+      have he : (List.range (2 ^ (n / 2))).map (fun q => f'' (bd1 + q))
+          = (halfSums (instA x) (n / 2)).map (clamp t0) := by
+        rw [show (List.range (2 ^ (n / 2))).map (fun q => f'' (bd1 + q))
+          = arrL f'' bd1 (2 ^ (n / 2)) from rfl, hf''arr, hf'arrA]
+      rw [he]
+      exact canon_sorted_map (halfSums_sorted (instA x) (n / 2))
+    have hraw := pairwise_range_map_le _ hP q q' hle hlt
+    rw [hcellpres (bd1 + q) (by omega), hcellpres (bd1 + q') (by omega)]
+    exact hraw
+  have hsortedB : ∀ q q', q ≤ q' → q' < 2 ^ (n - n / 2) →
+      g (bd2 + q) ≤ g (bd2 + q') := by
+    intro q q' hle hlt
+    have hP : List.Pairwise (· ≤ ·)
+        ((List.range (2 ^ (n - n / 2))).map (fun q => f'' (bd2 + q))) := by
+      have he : (List.range (2 ^ (n - n / 2))).map (fun q => f'' (bd2 + q))
+          = halfSums (fun i => instA x (n / 2 + i)) (n - n / 2) := by
+        rw [show (List.range (2 ^ (n - n / 2))).map (fun q => f'' (bd2 + q))
+          = arrL f'' bd2 (2 ^ (n - n / 2)) from rfl, hpresB'arr]
+      rw [he]
+      exact halfSums_sorted (fun i => instA x (n / 2 + i)) (n - n / 2)
+    have hraw := pairwise_range_map_le _ hP q q' hle hlt
+    rw [hcellpres (bd2 + q) (by omega), hcellpres (bd2 + q') (by omega)]
+    exact hraw
+  by_cases his : isSum (instA x) n x.t
+  · -- completeness: the decomposition places both sums in the window
+    have his' : isSum (instA x) (n / 2 + (n - n / 2)) x.t := by
+      rw [show n / 2 + (n - n / 2) = n from by omega]
+      exact his
+    obtain ⟨s, hsle, hisA, hisB⟩ :=
+      (isSum_split (instA x) (n / 2) (n - n / 2) x.t).mp his'
+    have hmemA : s ∈ halfSums (instA x) (n / 2) :=
+      (mem_halfSums _ _ _).mpr hisA
+    have hcomm : (fun i => instA x (i + n / 2))
+        = (fun i => instA x (n / 2 + i)) := by
+      funext i; rw [Nat.add_comm]
+    have hmemB : (x.t - s) ∈ halfSums (fun i => instA x (n / 2 + i))
+        (n - n / 2) := by
+      rw [hcomm] at hisB
+      exact (mem_halfSums _ _ _).mpr hisB
+    obtain ⟨q₁, hq₁, hcell₁⟩ := exists_clamped_pos hf'arrA hf''arr hmemA
+    obtain ⟨q₂, hq₂, hcell₂⟩ := exists_B_pos hf'arr hmemB
+    have hfind : ∃ i', 0 ≤ i' ∧ i' < 2 ^ (n / 2) ∧
+        ∃ jp', 1 ≤ jp' ∧ jp' ≤ 2 ^ (n - n / 2) ∧
+          g (bd1 + i') + g (bd2 + (jp' - 1)) = t0 :=
+      ⟨q₁, by omega, hq₁, q₂ + 1, by omega, by omega, by
+        rw [hgcellpres (bd1 + q₁) (by omega),
+          hgcellpres (bd2 + (q₂ + 1 - 1)) (by omega),
+          hcell₁, show q₂ + 1 - 1 = q₂ from by omega,
+          hpresB q₂ (by omega), hcell₂]
+        -- clamp t0 s + (x.t - s) = t0  via  canon_pair_iff  and  s + (x.t - s) = x.t
+        exact (canon_pair_iff (t0 := t0) (v := s) (s := x.t - s)).mpr (by omega)⟩
+    have hloop := scanLoop_accepts ρ bd1 bd2 t0
+      (2 ^ (n / 2) + 2 ^ (n - n / 2)) 0 (2 ^ (n - n / 2)) g (S - c₂ - c₃ - 7) r
+      (by rcases hb1 with rfl | rfl <;> omega) hbd2lt hb1' hg1 hg2 hg6 hg12
+      hg13 hg17 hg19 hg22 (by omega) (by omega) (by omega) hgfit hgaddr
+      (fun q hq q' hq' => by
+        rw [hgcellpres (bd1 + q) (by omega),
+          hgcellpres (bd2 + q') (by omega)]
+        exact hpair'' q hq q' hq')
+      hsortedA hsortedB hfind (by omega) (by omega)
+    -- chain the three walks (hex₂ ends at pcCanon, hex₃ at pcScanB)
+    have hex : exec prog2 ρ S 148 r (memOf w f0) = some true := by
+      rw [hex₂, show pcCanon = 215 from rfl, hex₃, show pcScanB = 231 from rfl,
+        hsetup, hloop]
+    rw [hex]
+    congr 1
+    exact (decide_eq_true_iff.mpr his).symm
+  · -- soundness: a true verdict would carry a witness back to isSum
+    obtain ⟨c₄, hc₄, hex₄⟩ :=
+      scanB_exec ρ f'' bd1 bd2 t0 r (S - c₂ - c₃)
+        (by rcases hb1 with rfl | rfl <;> omega) hbd2lt hb1' hb2' hw1
+        hf''fit hf''1 hf''2 hf''6 hf''7 hf''8 hf''9 hf''11 hf''19bd2 hpresT''
+        haddr hpair'' hfuel
+    rcases hex₄ with hfalse | ⟨htrue, i', jp', hi', hj1', hjN', hwit⟩
+    · -- the sweep rejected: the verdict register reads false
+      have hd : decide (isSum (instA x) n x.t) = false :=
+        decide_eq_false_iff_not.mpr his
+      rw [hex₂, show pcCanon = 215 from rfl, hex₃, show pcScanB = 231 from rfl,
+        hfalse, hd]
+    · exfalso
+      -- un-clamp the A-cell: canon's clamp is verdict-preserving
+      obtain ⟨v, hvmem, hveq⟩ : ∃ v, v ∈ halfSums (instA x) (n / 2) ∧
+          clamp t0 v = f'' (bd1 + i') := by
+        have hmem1 : f'' (bd1 + i') ∈ arrL f'' bd1 (2 ^ (n / 2)) := arrL_mem hi'
+        rw [hf''arr] at hmem1
+        obtain ⟨v, hv, hveq⟩ := List.mem_map.mp hmem1
+        refine ⟨v, ?_, hveq⟩
+        rw [hf'arrA] at hv
+        exact hv
+      have hjplt : jp' - 1 < 2 ^ (n - n / 2) := by omega
+      have hmem₂ : f'' (bd2 + (jp' - 1))
+          ∈ halfSums (fun i => instA x (n / 2 + i)) (n - n / 2) := by
+        rw [hpresB (jp' - 1) hjplt]
+        have h1 := arrL_mem (f := f') (b := bd2)
+          (L := 2 ^ (n - n / 2)) (q := jp' - 1) hjplt
+        rw [hf'arr] at h1
+        exact h1
+      have hwit' : v + f'' (bd2 + (jp' - 1)) = t0 := by
+        have h1 : clamp t0 v + f'' (bd2 + (jp' - 1)) = t0 := by
+          rw [hveq]; exact hwit
+        exact (canon_pair_iff (t0 := t0) (v := v)
+          (s := f'' (bd2 + (jp' - 1)))).mp h1
+      have his' : isSum (instA x) n x.t := by
+        rw [← ht0v]
+        exact isSum_of_witness (n := n) (x := x) (t0 := t0) hwit' hvmem hmem₂
+      exact his his'
 #print axioms scanLoop_accepts
 #print axioms scanB_setup7
 #print axioms choiceSum_le
+#print axioms bign_run2_from148
 
 end SubsetSum.MITM
