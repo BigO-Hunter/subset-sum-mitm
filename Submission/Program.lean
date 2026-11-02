@@ -666,5 +666,67 @@ and `prog` are untouched above, so Bench and the 3/4 submission path
 stay green until v2 replaces them. -/
 def prog2 : List Instr := resolve (prologue ++ phaseA ++ phaseA2 ++ canon ++ scanB ++ smallN)
 
+/-! ## v2 pc bookkeeping (S7)
+
+The v2 phase layout of `prog2` (310 instructions; `progPA` = 148):
+
+```
+  0–147  prologue ++ phaseA        (untouched, `phaseA_exec` exit pc = 148)
+148–214  phaseA2                   67 instrs; entry `add 6 18 2`
+215–230  canon                     16 instrs; entry `sub 14 14 14`
+231–252  scanB                     22 instrs; entry `sub 12 12 12`
+253–309  smallN                    57 instrs (n ≤ 3 branch only)
+```
+
+Resolved label positions (loop heads are what the phase proofs re-enter):
+`L2ROUND` 164 · `L2MERGE` 169 (`blt` → 171) · `LCN` 222 · `LCN2` 224
+(`blt` → 228) · `LSB` 238 (`blt` → 240) · `LSBODY` 240.  scanB's verdict
+pcs: reject-at-j=0 **239**, accept **247**, reject-at-i-exhaustion **252** —
+these are SCN's exec-conclusion pcs.
+
+Every fact below is `rfl` (the same idiom as the inline
+`show prog.getD 86 … by rfl` pins in PhaseA.lean / PhaseB.lean:1114);
+`pcCanon_val`/`pcScanB_val`/`pcPostScanB_val` pin the numerals to the
+resolved instruction lists, so a future edit to any v2 phase that shifts
+a boundary breaks the build here instead of silently mis-composing. -/
+
+/-- canon's entry pc: phaseA2 runs 148 → 215. -/
+def pcCanon : Nat := 215
+
+/-- scanB's entry pc: canon runs 215 → 231. -/
+def pcScanB : Nat := 231
+
+/-- The pc just past scanB (smallN's entry; scanB runs 231 → 253). -/
+def pcPostScanB : Nat := 253
+
+@[simp] theorem pcCanon_val : pcCanon = 148 + (resolve phaseA2).length := rfl
+@[simp] theorem pcScanB_val : pcScanB = pcCanon + (resolve canon).length := rfl
+@[simp] theorem pcPostScanB_val : pcPostScanB = pcScanB + (resolve scanB).length := rfl
+
+/-- Phase boundaries (entry instructions). -/
+theorem prog2_getD_148 : prog2.getD 148 Instr.reject = Instr.add 6 18 2 := rfl
+theorem prog2_getD_pcCanon : prog2.getD pcCanon Instr.reject = Instr.sub 14 14 14 := rfl
+theorem prog2_getD_pcScanB : prog2.getD pcScanB Instr.reject = Instr.sub 12 12 12 := rfl
+theorem prog2_getD_pcPostScanB : prog2.getD pcPostScanB Instr.reject = Instr.sub 20 0 1 := rfl
+
+/-- v2 loop heads (label offsets). -/
+theorem prog2_getD_L2ROUND : prog2.getD 164 Instr.reject = Instr.add 20 8 10 := rfl
+theorem prog2_getD_L2MERGE : prog2.getD 169 Instr.reject = Instr.blt 13 11 171 := rfl
+theorem prog2_getD_LCN : prog2.getD 222 Instr.reject = Instr.blt 14 21 224 := rfl
+theorem prog2_getD_LCN2 : prog2.getD 224 Instr.reject = Instr.add 20 6 14 := rfl
+theorem prog2_getD_LSB : prog2.getD 238 Instr.reject = Instr.blt 19 13 240 := rfl
+theorem prog2_getD_LSBODY : prog2.getD 240 Instr.reject = Instr.add 20 6 12 := rfl
+
+/-- scanB's verdict pcs and back-jumps (SCN exec-conclusion pcs). -/
+theorem prog2_getD_rejectJ : prog2.getD 239 Instr.reject = Instr.reject := rfl
+theorem prog2_getD_LSGTR : prog2.getD 245 Instr.reject = Instr.blt 17 16 248 := rfl
+theorem prog2_getD_LSLT : prog2.getD 246 Instr.reject = Instr.blt 16 17 250 := rfl
+theorem prog2_getD_accept : prog2.getD 247 Instr.reject = Instr.accept := rfl
+theorem prog2_getD_LSB_back : prog2.getD 249 Instr.reject = Instr.blt 2 1 238 := rfl
+theorem prog2_getD_rejectI : prog2.getD 252 Instr.reject = Instr.reject := rfl
+
+/-- canon's back-jump (`jmp LCN`). -/
+theorem prog2_getD_LCN_back : prog2.getD 230 Instr.reject = Instr.blt 2 1 222 := rfl
+
 end SubsetSum.MITM
 
